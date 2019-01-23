@@ -1,9 +1,11 @@
+#!/usr/bin/env bash
+
 # Deploy registry
 kubectl apply -f registry/deployment.yaml
 kubectl rollout status deployments/registry
 
 # Build and run proxy container for registry
-docker build -t socat-registry -f socat/Dockerfile applications/socat
+docker build -t socat-registry -f socat/Dockerfile socat
 docker stop socat-registry; docker rm socat-registry
 docker run -d -e "REG_IP=`minikube ip`" -e "REG_PORT=30400" --name socat-registry -p 30400:5000 socat-registry
 sleep 10

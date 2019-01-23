@@ -2,6 +2,6 @@
 
 1. Use deploy.sh to deploy the jenkins application to a kubernetes(minikube) cluster.
 2. After successful deployment jenkins will start up in the default browser and prompt for admin password. Use the following command to retrieve the administrator password from the pod.
-``# kubectl exec -it `kubectl get pods --selector=app=jenkins --output=jsonpath={.items..metadata.name}` cat /var/jenkins_home/secrets/initialAdminPassword``
+``kubectl exec -it `kubectl get pods --selector=app=jenkins --output=jsonpath={.items..metadata.name}` cat /var/jenkins_home/secrets/initialAdminPassword``
 3. Create an admin user and credentials, and click Save and Continue. On the Instance Configuration page, click Save and Finish. On the next page, click Restart (if it appears to hang for some time on restarting, you may have to refresh the browser window). 
 4. Login to Jenkins. Provision the Kubernetes Continuous Deploy plugin with a kubeconfig file that will allow access to the Kubernetes cluster. In Jenkins on the left, click on Credentials, select the Jenkins store, then Global credentials (unrestricted), and Add Credentials on the left menu. The following values must be entered precisely as indicated: for the Kind field select the option `Kubernetes configuration (kubeconfig)`, set the ID as `kubeconfig`, set Kubeconfig to `From a file on the Jenkins master`, and specify the the file path as `/var/jenkins_home/.kube/config`. Click the OK button.

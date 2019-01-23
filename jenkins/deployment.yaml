@@ -64,7 +64,7 @@ data:
     kubectl config set-context jenkins-minikube --cluster=minikube --user=jenkins --namespace=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
     kubectl config use-context jenkins-minikube
 
-    chmod 755 ~/.kube/config
+    chmod 777 ~/.kube/config
 
 ---
 
