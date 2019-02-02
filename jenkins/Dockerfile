@@ -20,4 +20,7 @@ apt-get update && apt-get install -y kubectl
 # Grant jenkins user group access to /var/run/docker.sock
 RUN addgroup --gid 1001 dsock
 RUN gpasswd -a jenkins dsock
-USER jenkins
+
+RUN usermod -aG sudo jenkins
+
+USER JENKINS

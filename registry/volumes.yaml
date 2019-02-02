@@ -1,0 +1,27 @@
+# kind: PersistentVolume
+# apiVersion: v1
+# metadata:
+#   name: registry
+#   labels:
+#     type: local
+# spec:
+#   capacity:
+#     storage: 4Gi
+#   accessModes:
+#     - ReadWriteOnce
+#   nfs:
+#     server: 192.168.112.36
+#     path: "/mnt/registry"
+
+# ---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: registry-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi
+---
