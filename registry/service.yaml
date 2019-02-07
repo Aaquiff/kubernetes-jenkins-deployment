@@ -33,17 +33,25 @@ spec:
   type: NodePort
 ---
 
-# apiVersion: extensions/v1beta1
-# kind: Ingress
-# metadata:
-#   name: registry-ingress
-#   # annotations:
-#   #   kubernetes.io/ingress.class: "nginx"
-#   #   nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-#   #   nginx.ingress.kubernetes.io/affinity: "cookie"
-#   #   nginx.ingress.kubernetes.io/session-cookie-name: "route"
-#   #   nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
-# spec:
-#   backend:
-#     serviceName: registry
-#     servicePort: 5000
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: registry-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    # nginx.ingress.kubernetes.io/affinity: "cookie"
+    # nginx.ingress.kubernetes.io/session-cookie-name: "route"
+    # nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
+spec:
+  tls:
+  - hosts:
+    - registry
+  rules:
+  - host: registry
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: registry-ui
+          servicePort: 8080

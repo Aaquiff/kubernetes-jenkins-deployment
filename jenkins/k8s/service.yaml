@@ -44,6 +44,9 @@ metadata:
     # nginx.ingress.kubernetes.io/session-cookie-name: "route"
     # nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
 spec:
+  tls:
+  - hosts:
+    - jenkins
   rules:
   - host: jenkins
     http:
