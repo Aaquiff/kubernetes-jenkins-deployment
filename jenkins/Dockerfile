@@ -17,10 +17,16 @@ touch /etc/apt/sources.list.d/kubernetes.list;\
 echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list;\
 apt-get update && apt-get install -y kubectl
 
+RUN cd /opt; \
+curl -L https://www-us.apache.org/dist/maven/maven-3/3.6.0/binaries/apache-maven-3.6.0-bin.tar.gz --output apache-maven-3.6.0-bin.tar.gz; \
+tar xzvf apache-maven-3.6.0-bin.tar.gz; \
+export PATH=/opt/apache-maven-3.6.0/bin:$PATH; \
+mvn -v
+
 # Grant jenkins user group access to /var/run/docker.sock
 RUN addgroup --gid 1001 dsock
 RUN gpasswd -a jenkins dsock
 
 RUN usermod -aG sudo jenkins
 
-USER JENKINS
+# USER JENKINS
