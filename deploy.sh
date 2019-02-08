@@ -1,22 +1,44 @@
 #!/usr/bin/env bash
 
+CLUSTER_ADMIN_PASSWORD=$1
+KUBECTL=`which kubectl`
+
+# methods
+function echoBold () {
+    echo -e $'\e[1m'"${1}"$'\e[0m'
+}
+
+function usage () {
+    echoBold "This script automates the installation of Jenkins on a kubernetes cluster"
+    echoBold "Usage: $0 {CLUSTER_ADMIN_PASSWORD}"
+}
+
+if [ "$CLUSTER_ADMIN_PASSWORD" = "" ]
+then
+    echoBold "Missing cluster admin password"
+    usage
+    exit 1
+fi
+
+echoBold 'Creating namespaces'
+kubectl create namespace registry
+kubectl create namespace jenkins
+
 # Deploy registry
-kubectl apply -f registry/deployment.yaml
-kubectl rollout status deployments/registry
+echoBold 'Deploying Registry'
+${KUBECTL} config set-context $(kubectl config current-context) --namespace registry
+${KUBECTL} apply -f registry/
+${KUBECTL} rollout status deployments/registry
 
-# Build and run proxy container for registry
-docker build -t socat-registry -f socat/Dockerfile socat
-docker stop socat-registry; docker rm socat-registry
-docker run -d -e "REG_IP=`minikube ip`" -e "REG_PORT=30400" --name socat-registry -p 30400:5000 socat-registry
-sleep 10
-
-# Build and push latest version of jenkins to local registry
-docker build -t 127.0.0.1:30400/jenkins:latest -f applications/Dockerfile applications/jenkins
-docker push 127.0.0.1:30400/jenkins:latest
-
-docker stop socat-registry
-
+echoBold 'Deploying Jenkins'
 # Deploy jenkins
-kubectl apply -f jenkins/deployment.yaml
-kubectl rollout status deployment/jenkins
-minikube service jenkins
+${KUBECTL} config set-context $(kubectl config current-context) --namespace jenkins
+${KUBECTL} apply -f jenkins/roles.yaml --username=admin --password=$CLUSTER_ADMIN_PASSWORD
+${KUBECTL} apply -f jenkins/k8s/
+${KUBECTL} rollout status deployment/jenkins
+
+echoBold 'Waiting for jenkins to start...'
+sleep 30
+
+echo "Jenkins initial admin password:"
+${KUBECTL} exec -it $(${KUBECTL} get pods --selector=app=jenkins --output=jsonpath={.items..metadata.name}) cat /var/jenkins_home/secrets/initialAdminPassword
