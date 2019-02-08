@@ -6,9 +6,7 @@ metadata:
 data:
   kubectl-config-context.sh: |-
     #!/bin/bash -v
-
-    echo Running as `whoami`
-
+    
     kubectl config set-credentials jenkins --token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
     kubectl config set-cluster kubernetes --server=https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT --certificate-authority="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
     kubectl config set-context jenkins-kubernetes --cluster=kubernetes --user=jenkins --namespace=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
@@ -56,7 +54,7 @@ spec:
           # privileged: true
         volumeMounts:
         - name: kubeconfig
-          mountPath: /var/jenkins_home/.kube
+          mountPath: /root/.kube
         - name: docker
           mountPath: /var/run/docker.sock
         - name: jenkins-persistent-storage
@@ -78,6 +76,5 @@ spec:
         hostPath:
           path: /var/run/docker.sock
       - name: jenkins-persistent-storage
-        # emptyDir: {}
         persistentVolumeClaim:
           claimName: jenkins-claim
