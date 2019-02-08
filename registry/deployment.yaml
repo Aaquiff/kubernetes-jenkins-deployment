@@ -19,8 +19,8 @@ spec:
         volumeMounts:
         - name: docker
           mountPath: /var/run/docker.sock
-        # - name: registry-persistent-storage
-        #   mountPath: /var/lib/registry
+        - name: registry-persistent-storage
+          mountPath: /var/lib/registry
         ports:
         - containerPort: 5000
           name: registry
@@ -37,6 +37,6 @@ spec:
       - name: docker
         hostPath:
           path: /var/run/docker.sock
-      # - name: registry-persistent-storage
-      #   persistentVolumeClaim:
-      #     claimName: registry-claim
+      - name: registry-persistent-storage
+        persistentVolumeClaim:
+          claimName: registry-claim
