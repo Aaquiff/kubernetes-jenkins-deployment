@@ -28,3 +28,17 @@ spec:
     requests:
       storage: 10Gi
 ---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wum-claim
+  labels:
+    app: jenkins
+    tier: jenkins
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

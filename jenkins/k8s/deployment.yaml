@@ -48,10 +48,30 @@ spec:
       containers:
       - image: aaquiff/jenkins-docker-kube
         name: jenkins
+        env:
+        - name: WSO2_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: wso2-credentials
+              key: username
+        - name: WSO2_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wso2-credentials
+              key: password
         imagePullPolicy: Always
+        # readinessProbe:
+        #   exec:
+        #     command:
+        #     - wum version
+        #     - docker version
+        #     - kubectl version
         securityContext:
           runAsUser: 0
           # privileged: true
+        # env:
+        # - name: CASC_JENKINS_CONFIG
+        #   value: "/casc_configs"
         volumeMounts:
         - name: kubeconfig
           mountPath: /root/.kube
@@ -59,6 +79,12 @@ spec:
           mountPath: /var/run/docker.sock
         - name: jenkins-persistent-storage
           mountPath: /var/jenkins_home
+        - name: wso2-credentials
+          mountPath: /wso2creds
+        # - name: jenkins-conf-storage
+        #   mountPath: /var/casc_configs
+        # - name: wum-claim-storage
+        #   mountPath: /root/.wum3
         ports:
         - containerPort: 8080
           name: jenkins
@@ -70,6 +96,12 @@ spec:
           items:
           - key: kubectl-config-context.sh
             path: kubectl-config-context.sh
+      - name: jenkins-init
+        configMap:
+          name: jenkins-init
+          items:
+          - key: jenkins-init.sh
+            path: jenkins-init.sh
       - name: kubeconfig
         emptyDir: {}
       - name: docker
@@ -78,3 +110,12 @@ spec:
       - name: jenkins-persistent-storage
         persistentVolumeClaim:
           claimName: jenkins-claim
+      - name: wso2-credentials
+        secret:
+          secretName: wso2-credentials
+      # - name: wum-claim-storage
+      #   persistentVolumeClaim:
+      #     claimName: wum-claim
+      # - name: jenkins-conf-storage
+      #   configMap:
+      #     name: jenkins-conf

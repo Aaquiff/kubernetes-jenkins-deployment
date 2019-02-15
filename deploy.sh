@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 CLUSTER_ADMIN_PASSWORD=$1
+WSO2_USERNAME=$2
+WSO2_PASSWORD=$3
 KUBECTL=`which kubectl`
 
 # methods
@@ -10,19 +12,19 @@ function echoBold () {
 
 function usage () {
     echoBold "This script automates the installation of Jenkins on a kubernetes cluster"
-    echoBold "Usage: $0 {CLUSTER_ADMIN_PASSWORD}"
+    echoBold "Usage: $0 CLUSTER_ADMIN_PASSWORD WUM_USERNAME WUM_PASSWORD"
 }
 
-if [ "$CLUSTER_ADMIN_PASSWORD" = "" ]
+if [ "$3" = "" ]
 then
-    echoBold "Missing cluster admin password"
+    echoBold "Incorrect Usage!"
     usage
     exit 1
 fi
 
 echoBold 'Creating namespaces'
-kubectl create namespace registry
-kubectl create namespace jenkins
+${KUBECTL} create namespace registry
+${KUBECTL} create namespace jenkins
 
 # Deploy registry
 echoBold 'Deploying Registry'
@@ -42,3 +44,18 @@ sleep 30
 
 echo "Jenkins initial admin password:"
 ${KUBECTL} exec -it $(${KUBECTL} get pods --selector=app=jenkins --output=jsonpath={.items..metadata.name}) cat /var/jenkins_home/secrets/initialAdminPassword
+
+echo "Initialize WUM"
+# ${KUBECTL} exec -it $(${KUBECTL} get pods --selector=app=jenkins --output=jsonpath={.items..metadata.name}) -- wum init --username $WSO2_USERNAME --password $WSO2_PASSWORD 
+
+kubectl create secret generic --from-literal=username=$WSO2_USERNAME --from-literal=password=$WSO2_PASSWORD
+
+${KUBECTL} create namespace wso2-staging
+${KUBECTL} config set-context $(kubectl config current-context) --namespace wso2-staging
+${KUBECTL} create serviceaccount wso2svc-account -n wso2-staging
+${KUBECTL} create --username=admin --password=$CLUSTER_ADMIN_PASSWORD -f wso2/rbac-staging.yaml
+
+${KUBECTL} create namespace wso2-prod
+${KUBECTL} config set-context $(kubectl config current-context) --namespace wso2-prod
+${KUBECTL} create serviceaccount wso2svc-account -n wso2-prod
+${KUBECTL} create --username=admin --password=$CLUSTER_ADMIN_PASSWORD -f wso2/rbac-prod.yaml
