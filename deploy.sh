@@ -36,6 +36,7 @@ echoBold 'Deploying Jenkins'
 # Deploy jenkins
 ${KUBECTL} config set-context $(kubectl config current-context) --namespace jenkins
 ${KUBECTL} apply -f jenkins/roles.yaml --username=admin --password=$CLUSTER_ADMIN_PASSWORD
+${KUBECTL} create configmap jenkins-casc-conf --from-file=jenkins/config.yaml
 ${KUBECTL} apply -f jenkins/k8s/
 ${KUBECTL} rollout status deployment/jenkins
 

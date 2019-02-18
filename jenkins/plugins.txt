@@ -74,4 +74,4 @@ kubernetes-cd:0.2.3
 azure-commons:0.2.6
 configuration-as-code:1.5
 configuration-as-code-support:1.5
-jobs-dsl:1.71
+job-dsl:1.71

@@ -1,0 +1,16 @@
+jobs:
+  - script: >
+      pipelineJob('wso2ei') {
+            definition {
+              cpsScm {
+                scm {
+                  github('Aaquiff/kubernetes-ei-cd')
+                }
+              }
+            }
+            parameters {
+                stringParam('PRODUCT','','WSO2 Product name')
+                stringParam('VERSION','','Version of the chosen product')
+                stringParam('TIMESTAMP','','WUM timestamp')
+              }
+      }

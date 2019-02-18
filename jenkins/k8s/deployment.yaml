@@ -25,6 +25,7 @@ metadata:
 spec:
   strategy:
     type: Recreate
+  replicas: 1
   template:
     metadata:
       labels:
@@ -59,19 +60,21 @@ spec:
             secretKeyRef:
               name: wso2-credentials
               key: password
+        - name: CASC_JENKINS_CONFIG
+          value: "/var/casc_configs"
         imagePullPolicy: Always
-        # readinessProbe:
-        #   exec:
-        #     command:
-        #     - wum version
-        #     - docker version
-        #     - kubectl version
+        readinessProbe:
+          periodSeconds: 10
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - wum version
+            - docker version
+            - kubectl version
         securityContext:
           runAsUser: 0
           # privileged: true
-        # env:
-        # - name: CASC_JENKINS_CONFIG
-        #   value: "/casc_configs"
         volumeMounts:
         - name: kubeconfig
           mountPath: /root/.kube
@@ -81,9 +84,10 @@ spec:
           mountPath: /var/jenkins_home
         - name: wso2-credentials
           mountPath: /wso2creds
-        # - name: jenkins-conf-storage
-        #   mountPath: /var/casc_configs
-        # - name: wum-claim-storage
+        - name: jenkins-casc-conf
+          mountPath: /var/casc_configs/config.yaml
+          subPath: config.yaml
+        # - name: wum-storage
         #   mountPath: /root/.wum3
         ports:
         - containerPort: 8080
@@ -96,12 +100,6 @@ spec:
           items:
           - key: kubectl-config-context.sh
             path: kubectl-config-context.sh
-      - name: jenkins-init
-        configMap:
-          name: jenkins-init
-          items:
-          - key: jenkins-init.sh
-            path: jenkins-init.sh
       - name: kubeconfig
         emptyDir: {}
       - name: docker
@@ -113,9 +111,9 @@ spec:
       - name: wso2-credentials
         secret:
           secretName: wso2-credentials
-      # - name: wum-claim-storage
+      # - name: wum-storage
       #   persistentVolumeClaim:
       #     claimName: wum-claim
-      # - name: jenkins-conf-storage
-      #   configMap:
-      #     name: jenkins-conf
+      - name: jenkins-casc-conf
+        configMap:
+          name: jenkins-casc-conf
