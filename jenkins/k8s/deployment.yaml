@@ -85,8 +85,7 @@ spec:
         - name: wso2-credentials
           mountPath: /wso2creds
         - name: jenkins-casc-conf
-          mountPath: /var/casc_configs/config.yaml
-          subPath: config.yaml
+          mountPath: /var/casc_configs
         # - name: wum-storage
         #   mountPath: /root/.wum3
         ports:
