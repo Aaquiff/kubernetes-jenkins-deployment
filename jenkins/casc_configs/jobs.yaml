@@ -8,9 +8,18 @@ jobs:
                 }
               }
             }
+            triggers {
+              configure {
+                it / 'triggers' << 'com.cloudbees.jenkins.GitHubPushTrigger'{
+                    spec''
+                }
+                scm('* * * * *')
+              }
+            }
             parameters {
                 stringParam('PRODUCT','','WSO2 Product name')
                 stringParam('VERSION','','Version of the chosen product')
                 stringParam('TIMESTAMP','','WUM timestamp')
               }
       }
+
