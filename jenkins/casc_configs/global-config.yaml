@@ -1,0 +1,10 @@
+unclassified:
+  globalLibraries:
+    libraries:
+      - name: "wso2-jenkins-shared-lib"
+        defaultVersion: master
+        retriever:
+          modernSCM:
+            scm:
+              git:
+                remote: "https://github.com/Aaquiff/jenkins-shared-lib"
