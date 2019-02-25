@@ -24,12 +24,15 @@ RUN kdig
 RUN apt-get install maven -y
 RUN mvn -v
 
-# Install WUM
+# Install wum
 RUN wget https://product-dist.wso2.com/downloads/wum/3.0.2/wum-3.0.2-linux-x64.tar.gz
 RUN tar -C /usr/local -xzf wum-3.0.2-linux-x64.tar.gz
 RUN cp usr/local/wum/bin/wum usr/local/bin
 
-RUN wum   
+# Install helm
+RUN curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > get_helm.sh
+RUN chmod 700 get_helm.sh
+RUN ./get_helm.sh
 
 # Grant jenkins user group access to /var/run/docker.sock
 RUN addgroup --gid 1001 dsock
