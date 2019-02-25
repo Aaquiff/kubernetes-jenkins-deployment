@@ -25,7 +25,6 @@ metadata:
 spec:
   strategy:
     type: Recreate
-  replicas: 1
   template:
     metadata:
       labels:

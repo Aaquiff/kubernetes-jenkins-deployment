@@ -12,5 +12,3 @@ ${KUBECTL} delete -f jenkins/k8s/service.yaml
 
 ${KUBECTL} delete namespace jenkins
 ${KUBECTL} delete namespace registry
-
-sleep 10
