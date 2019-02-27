@@ -1,4 +1,4 @@
-FROM jenkins/jenkins:2.165
+FROM jenkins/jenkins:2.60.3
 USER root
 
 #Pre-Install Jenkins Plugins
