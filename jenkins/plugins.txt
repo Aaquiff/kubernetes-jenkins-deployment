@@ -64,7 +64,6 @@ github:1.29.4
 github-branch-source:2.4.2
 pipeline-github-lib:1.0
 mapdb-api:1.0.9.0
-subversion:2.12.1
 ssh-slaves:1.29.4
 matrix-auth:2.3
 pam-auth:1.4
@@ -72,3 +71,5 @@ ldap:1.20
 email-ext:2.64
 kubernetes-cd:0.2.3
 azure-commons:0.2.8
+pipeline-utility-steps:2.2.0
+job-dsl:1.71

@@ -40,7 +40,8 @@ echoBold "Creating WUM secret"
 kubectl create secret generic wso2-credentials --from-literal=username=$WSO2_USERNAME --from-literal=password=$WSO2_PASSWORD
 
 ${KUBECTL} apply -f jenkins/roles.yaml --username=admin --password=$CLUSTER_ADMIN_PASSWORD
-${KUBECTL} create configmap jenkins-casc-conf --from-file=jenkins/casc_configs/
+${KUBECTL} create configmap jenkins-casc-conf --from-file=jenkins/casc_configs/ --dry-run -o yaml | ${KUBECTL} apply -f -
+${KUBECTL} create configmap jenkins-init-script --from-file jenkins/init.groovy --dry-run -o yaml | ${KUBECTL} apply -f -
 ${KUBECTL} apply -f jenkins/k8s/
 ${KUBECTL} rollout status deployment/jenkins
 
@@ -48,4 +49,4 @@ echoBold 'Waiting for jenkins to start...'
 sleep 30
 
 echo "Jenkins initial admin password:"
-${KUBECTL} exec -it $(${KUBECTL} get pods --selector=app=jenkins --output=jsonpath={.items..metadata.name}) cat /var/jenkins_home/secrets/initialAdminPassword
+${KUBECTL} exec -it $(${KUBECTL} get pods --selector=app=jenkins --output=jsonpath={.items..metadata.name}) -- cat /var/jenkins_home/secrets/initialAdminPassword
