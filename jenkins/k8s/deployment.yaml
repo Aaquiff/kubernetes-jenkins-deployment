@@ -59,8 +59,8 @@ spec:
             secretKeyRef:
               name: wso2-credentials
               key: password
-        - name: CASC_JENKINS_CONFIG
-          value: "/var/casc_configs"
+        # - name: CASC_JENKINS_CONFIG
+        #   value: "/var/casc_configs"
         imagePullPolicy: Always
         readinessProbe:
           periodSeconds: 10
@@ -83,8 +83,11 @@ spec:
           mountPath: /var/jenkins_home
         - name: wso2-credentials
           mountPath: /wso2creds
-        - name: jenkins-casc-conf
-          mountPath: /var/casc_configs
+        # - name: jenkins-casc-conf
+        #   mountPath: /var/casc_configs
+        - name: jenkins-init-script
+          mountPath: /var/jenkins_home/init.groovy
+          subPath: init.groovy
         # - name: wum-storage
         #   mountPath: /root/.wum3
         ports:
@@ -115,3 +118,6 @@ spec:
       - name: jenkins-casc-conf
         configMap:
           name: jenkins-casc-conf
+      - name: jenkins-init-script
+        configMap:
+          name: jenkins-init-script
