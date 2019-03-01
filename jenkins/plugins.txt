@@ -1,2 +1,4 @@
 pipeline-utility-steps:2.2.0
 job-dsl:1.71
+configuration-as-code:1.7
+configuration-as-code-support:1.7
