@@ -59,8 +59,8 @@ spec:
             secretKeyRef:
               name: wso2-credentials
               key: password
-        # - name: CASC_JENKINS_CONFIG
-        #   value: "/var/casc_configs"
+        - name: CASC_JENKINS_CONFIG
+          value: "/var/casc_configs"
         imagePullPolicy: Always
         readinessProbe:
           periodSeconds: 10
@@ -73,7 +73,6 @@ spec:
             - kubectl version
         securityContext:
           runAsUser: 0
-          # privileged: true
         volumeMounts:
         - name: kubeconfig
           mountPath: /root/.kube
@@ -85,11 +84,6 @@ spec:
           mountPath: /wso2creds
         - name: jenkins-casc-conf
           mountPath: /var/casc_configs
-        - name: jenkins-init-script
-          mountPath: /var/jenkins_home/init.groovy
-          subPath: init.groovy
-        # - name: wum-storage
-        #   mountPath: /root/.wum3
         ports:
         - containerPort: 8080
           name: jenkins
@@ -112,12 +106,6 @@ spec:
       - name: wso2-credentials
         secret:
           secretName: wso2-credentials
-      # - name: wum-storage
-      #   persistentVolumeClaim:
-      #     claimName: wum-claim
       - name: jenkins-casc-conf
         configMap:
           name: jenkins-casc-conf
-      - name: jenkins-init-script
-        configMap:
-          name: jenkins-init-script

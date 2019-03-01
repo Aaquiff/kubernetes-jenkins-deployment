@@ -1,4 +1,4 @@
-FROM jenkinsci/jenkins:lts
+FROM jenkins/jenkins:lts
 USER root
 
 #Pre-Install Jenkins Plugins
