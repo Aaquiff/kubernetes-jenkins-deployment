@@ -16,10 +16,5 @@ jobs:
                 scm('* * * * *')
               }
             }
-            parameters {
-                stringParam('PRODUCT','','WSO2 Product name')
-                stringParam('VERSION','','Version of the chosen product')
-                stringParam('TIMESTAMP','','WUM timestamp')
-              }
       }
 
