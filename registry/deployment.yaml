@@ -16,6 +16,9 @@ spec:
       containers:
       - image: registry:2
         name: registry
+        env:
+          - name: REGISTRY_STORAGE_DELETE_ENABLED
+            value: "true"
         volumeMounts:
         - name: docker
           mountPath: /var/run/docker.sock
