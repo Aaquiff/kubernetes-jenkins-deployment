@@ -34,6 +34,10 @@ RUN curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > get_he
 RUN chmod 700 get_helm.sh
 RUN ./get_helm.sh
 
+RUN wget https://www-us.apache.org/dist//jmeter/binaries/apache-jmeter-5.1.tgz
+RUN tar -C /usr/local -xzf apache-jmeter-5.1.tgz
+ENV PATH="/usr/local/apache-jmeter-5.1/bin:${PATH}"
+
 # Grant jenkins user group access to /var/run/docker.sock
 RUN addgroup --gid 1001 dsock
 RUN gpasswd -a jenkins dsock
