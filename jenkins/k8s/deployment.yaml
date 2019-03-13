@@ -59,8 +59,20 @@ spec:
             secretKeyRef:
               name: wso2-credentials
               key: password
+        - name: REGISTRY_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: registry-credentials-pod
+              key: username
+        - name: REGISTRY_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: registry-credentials-pod
+              key: password
         - name: CASC_JENKINS_CONFIG
           value: "/var/casc_configs"
+        - name: PROD_CONFIG_LOCATION
+          value: "/var/prod-config"
         imagePullPolicy: Always
         readinessProbe:
           periodSeconds: 10
@@ -84,6 +96,8 @@ spec:
           mountPath: /wso2creds
         - name: jenkins-casc-conf
           mountPath: /var/casc_configs
+        - name: prod-config-conf
+          mountPath: /var/prod-config
         ports:
         - containerPort: 8080
           name: jenkins
@@ -109,3 +123,6 @@ spec:
       - name: jenkins-casc-conf
         configMap:
           name: jenkins-casc-conf
+      - name: prod-config-conf
+        configMap:
+          name: prod-config-conf
