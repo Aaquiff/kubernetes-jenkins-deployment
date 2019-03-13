@@ -44,61 +44,15 @@ REGISTRY_USERNAME=$5
 REGISTRY_PASSWORD=$6
 REGISTRY_EMAIL=$7
 
-# # capture named arguments
-# while [ "$1" != "" ]; do
-#     PARAM=`echo $1 | awk -F= '{print $1}'`
-#     VALUE=`echo $1 | awk -F= '{print $2}'`
-
-#     case ${PARAM} in
-#         -h | --help)
-#             usage
-#             exit 1
-#             ;;
-#         --wu | --wso2-username)
-#             WSO2_SUBSCRIPTION_USERNAME=${VALUE}
-#             ;;
-#         --wp | --wso2-password)
-#             WSO2_SUBSCRIPTION_PASSWORD=${VALUE}
-#             ;;
-#         --cap | --cluster-admin-password)
-#             ADMIN_PASSWORD=${VALUE}
-#             ;;
-#         *)
-#             echoBold "ERROR: unknown parameter \"${PARAM}\""
-#             usage
-#             exit 1
-#             ;;
-#     esac
-#     shift
-# done
-
-echoBold 'Creating namespaces'
-${KUBECTL} create namespace registry
+echoBold 'Creating jenkins namespace'
 ${KUBECTL} create namespace jenkins
 
-# Deploy registry
-echoBold 'Deploying Registry'
-${KUBECTL} config set-context $(kubectl config current-context) --namespace registry
-${KUBECTL} apply -f registry/
-${KUBECTL} rollout status deployments/registry
-
-echoBold 'Deploying Jenkins'
-# Deploy jenkins
 ${KUBECTL} config set-context $(kubectl config current-context) --namespace jenkins
 
 echoBold "Creating WUM secret"
 ${KUBECTL} create secret generic wso2-credentials --from-literal=username=$WSO2_SUBSCRIPTION_USERNAME --from-literal=password=$WSO2_SUBSCRIPTION_PASSWORD
 ${KUBECTL} create secret generic registry-credentials-pod --from-literal=username=$REGISTRY_USERNAME --from-literal=password=$REGISTRY_PASSWORD
 ${KUBECTL} create secret docker-registry registry-credentials --docker-server=$REGISTRY_SERVER --docker-username=$REGISTRY_USERNAME --docker-password=$REGISTRY_PASSWORD --docker-email=$REGISTRY_EMAIL
-
-${KUBECTL} apply -f jenkins/roles.yaml --username=admin --password=$ADMIN_PASSWORD
-${KUBECTL} create configmap jenkins-casc-conf --from-file=jenkins/casc_configs/ --dry-run -o yaml | ${KUBECTL} apply -f -
-${KUBECTL} create configmap jenkins-init-script --from-file jenkins/init.groovy --dry-run -o yaml | ${KUBECTL} apply -f -
-
-${KUBECTL} create configmap prod-config-conf --from-file jenkins/prod-config/ --dry-run -o yaml | ${KUBECTL} apply -f -
-
-${KUBECTL} apply -f jenkins/k8s/
-${KUBECTL} rollout status deployment/jenkins
 
 echoBold "Initializing helm in cluster"
 ${KUBECTL} apply -f helm/rbac-config.yaml --username=admin --password=$ADMIN_PASSWORD
