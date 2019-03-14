@@ -19,8 +19,8 @@ metadata:
   namespace : {{ .Values.namespace }}
 data:
   {{- $file := .Files }}
-  {{- $config := printf "%s/casc_configs/*" .Values.confs -}}
-  {{- range $path, $byte := .Files.Glob $config}}
+  {{- $config := printf "%s/*" .Values.cascConfigs -}}
+  {{- range $path, $byte := .Files.Glob $config }}
   {{- $list := $path | splitList "/"}}
   {{- $length := len $list }}
   {{- $last := add $length -1 }}
