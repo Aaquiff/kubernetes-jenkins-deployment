@@ -36,10 +36,7 @@ data:
     kubectl config set-cluster kubernetes --server=https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT --certificate-authority="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
     kubectl config set-context jenkins-kubernetes --cluster=kubernetes --user=jenkins --namespace=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
     kubectl config use-context jenkins-kubernetes
-
-    # Create docker-registry secret in local cluster
-    kubectl create secret docker-registry registry-credentials --docker-server=$REGISTRY_SERVER --docker-username=$REGISTRY_USERNAME --docker-password=$REGISTRY_PASSWORD --docker-email=$REGISTRY_EMAIL --dry-run -o yaml | kubectl apply -f -
-
+    
     chmod 777 ~/.kube/config
 
 ---
