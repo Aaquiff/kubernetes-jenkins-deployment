@@ -22,3 +22,8 @@ Use the `jenkins` helm chart to deploy a jenkins instance that could handle the 
 ## Considerations
 
 * Nodes in the cluster should have docker installed because the jenkins pod will use the docker installed on the node it's running on.
+
+## Troubleshooting
+
+#### Error: failed to create resource: namespaces "wso2" not found or Error: UPGRADE FAILED: failed to create resource: namespaces "wso2" not found
+Check if there is a failed helm deployment for the chart in the target environment. If there is an existing deployment, delete the deployment.
