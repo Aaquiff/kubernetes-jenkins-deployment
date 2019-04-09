@@ -1,0 +1,11 @@
+namespace: jenkins
+image: aaquiff/jenkins-docker-kube:latest
+confs: confs
+cascConfigs: confs/casc_configs
+wso2Username: <WSO2_USERNAME
+wso2Password: <WSO2_PASSWORD>
+registry:
+    server: <DOCKER_REGISTRY_SERVER>
+    username: <DOCKER_REGISTRY_USERNAME>
+    password: <DOCKER_REGISTRY_PASSWORD>
+    email: <DOCKER_REGISTRY_EMAIL>

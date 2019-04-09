@@ -44,4 +44,6 @@ RUN gpasswd -a jenkins dsock
 
 RUN usermod -aG sudo jenkins
 
+COPY wumupdate /usr/local/bin/
+RUN chmod 777 /usr/local/bin/wumupdate
 # USER JENKINS

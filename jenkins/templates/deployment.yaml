@@ -7,37 +7,36 @@ data:
   kubectl-config-context.sh: |-
     #!/bin/bash -v
 
-    # Configure external production cluster using the mounted secrets
-    PROD_CRED_PATH=/secrets/prod-credentials
+    # # Configure external production cluster using the mounted secrets
+    # PROD_CRED_PATH=/secrets/prod-credentials
 
-    USERNAME=$(cat $PROD_CRED_PATH/username)
-    PASSWORD=$(cat $PROD_CRED_PATH/password)
-    SERVER=$(cat $PROD_CRED_PATH/server)
-    CERTIFICATE_PATH=$PROD_CRED_PATH/ca.crt
-    NAMESPACE="default"
+    # USERNAME=$(cat $PROD_CRED_PATH/username)
+    # PASSWORD=$(cat $PROD_CRED_PATH/password)
+    # SERVER=$(cat $PROD_CRED_PATH/server)
+    # CERTIFICATE_PATH=$PROD_CRED_PATH/ca.crt
+    # NAMESPACE="default"
  
-    kubectl config set-credentials prod-admin --username=$USERNAME --password=$PASSWORD
-    kubectl config set-cluster production --server=$SERVER --certificate-authority=$CERTIFICATE_PATH
-    kubectl config set-context production --cluster=production --user=prod-admin --namespace=$NAMESPACE
-    kubectl config use-context production
+    # kubectl config set-credentials prod-admin --username=$USERNAME --password=$PASSWORD
+    # kubectl config set-cluster production --server=$SERVER --certificate-authority=$CERTIFICATE_PATH
+    # kubectl config set-context production --cluster=production --user=prod-admin --namespace=$NAMESPACE
+    # kubectl config use-context production
 
-    # Create docker-registry secret in production cluster
-    REG_CRED_PATH="/secrets/registry-credentials-pod"
-    REGISTRY_SERVER=$(cat $REG_CRED_PATH/server)
-    REGISTRY_USERNAME=$(cat $REG_CRED_PATH/username)
-    REGISTRY_PASSWORD=$(cat $REG_CRED_PATH/password)
-    REGISTRY_EMAIL=$(cat $REG_CRED_PATH/email)
-    kubectl create secret docker-registry registry-credentials --docker-server=$REGISTRY_SERVER --docker-username=$REGISTRY_USERNAME --docker-password=$REGISTRY_PASSWORD --docker-email=$REGISTRY_EMAIL --dry-run -o yaml | kubectl apply -f -
+    # # Create docker-registry secret in production cluster
+    # REG_CRED_PATH="/secrets/registry-credentials-pod"
+    # REGISTRY_SERVER=$(cat $REG_CRED_PATH/server)
+    # REGISTRY_USERNAME=$(cat $REG_CRED_PATH/username)
+    # REGISTRY_PASSWORD=$(cat $REG_CRED_PATH/password)
+    # REGISTRY_EMAIL=$(cat $REG_CRED_PATH/email)
+    # kubectl create secret docker-registry registry-credentials --docker-server=$REGISTRY_SERVER --docker-username=$REGISTRY_USERNAME --docker-password=$REGISTRY_PASSWORD --docker-email=$REGISTRY_EMAIL --dry-run -o yaml | kubectl apply -f -
+
+    cp /root/kube-conf/* /root/.kube/
     
     # Configure kubeconfig entry for local cluster
     kubectl config set-credentials jenkins --token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
     kubectl config set-cluster kubernetes --server=https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT --certificate-authority="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
     kubectl config set-context jenkins-kubernetes --cluster=kubernetes --user=jenkins --namespace=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
     kubectl config use-context jenkins-kubernetes
-
-    # Create docker-registry secret in local cluster
-    kubectl create secret docker-registry registry-credentials --docker-server=$REGISTRY_SERVER --docker-username=$REGISTRY_USERNAME --docker-password=$REGISTRY_PASSWORD --docker-email=$REGISTRY_EMAIL --dry-run -o yaml | kubectl apply -f -
-
+    
     chmod 777 ~/.kube/config
 
 ---
@@ -71,12 +70,12 @@ spec:
         - name: kubectl-jenkins-context
           mountPath: "/kubectl-config-context.sh"
           subPath: "kubectl-config-context.sh"
-        - name: prod-credentials
-          mountPath: /secrets/prod-credentials
         - name: registry-credentials-pod
           mountPath: /secrets/registry-credentials-pod
+        - name: kube-conf
+          mountPath: root/kube-conf
       containers:
-      - image: aaquiff/jenkins-docker-kube:latest
+      - image: {{ .Values.image }}
         name: jenkins
         env:
         - name: WSO2_USERNAME
@@ -131,8 +130,6 @@ spec:
           mountPath: /wso2creds
         - name: jenkins-casc-conf
           mountPath: /var/casc_configs
-        - name: prod-credentials
-          mountPath: /secrets/prod-credentials
         ports:
         - containerPort: 8080
           name: jenkins
@@ -158,9 +155,9 @@ spec:
       - name: jenkins-casc-conf
         configMap:
           name: jenkins-casc-conf
-      - name: prod-credentials
-        secret:
-          secretName: prod-credentials
       - name: registry-credentials-pod
         secret:
           secretName: registry-credentials-pod
+      - name: kube-conf
+        configMap:
+          name: kube-conf
