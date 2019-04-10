@@ -60,8 +60,6 @@ spec:
               key: password
         - name: CASC_JENKINS_CONFIG
           value: "/var/casc_configs"
-        - name: PROD_CONFIG_LOCATION
-          value: "/var/prod-config"
         imagePullPolicy: Always
         readinessProbe:
           periodSeconds: 10
