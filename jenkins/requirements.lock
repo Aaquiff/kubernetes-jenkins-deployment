@@ -1,0 +1,6 @@
+dependencies:
+- name: spinnaker
+  repository: https://kubernetes-charts.storage.googleapis.com
+  version: 1.8.1
+digest: sha256:9a960e49404211bfe5faca6b6ac5cb531c5565f609361db076cb32a361387e3e
+generated: 2019-04-17T16:45:45.817054+05:30

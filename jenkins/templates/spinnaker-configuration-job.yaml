@@ -1,0 +1,122 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spin
+spec:
+  template:
+    spec:
+      containers:
+      - name: spin
+        image: aaquiff/spin
+        command: ["/bin/sh"]
+        args: ["-c", "spin application list --gate-endpoint http://35.226.115.157:8084"]
+        volumeMounts:
+        - name: spinnaker-conf
+          mountPath: /spinnaker
+      restartPolicy: Never
+      volumes:
+      - name: spinnaker-conf
+        configMap:
+          name: spinnaker-conf
+  backoffLimit: 4 
+  
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spinnaker-conf
+data:
+  pipeline.json: |-
+    {
+      "application": "wso2-demo",
+      "expectedArtifacts": [
+        {
+        "defaultArtifact": {
+          "customKind": true,
+          "id": "a59e9084-8ab1-4013-9d9b-f5686199e3ff"
+        },
+        "id": "4573e26f-3c44-4e99-8723-09f018454bd8",
+        "matchArtifact": {
+          "id": "ddae3488-cc22-4376-b758-c92616c1e7a6",
+          "name": ".*\\.tgz",
+          "type": "embedded/base64"
+        },
+        "useDefaultArtifact": false,
+        "usePriorArtifact": true
+        },
+        {
+        "defaultArtifact": {
+          "id": "fae0e35b-0770-40da-b906-59035fcf342e",
+          "name": "scalable-integrator/values-staging.yaml",
+          "reference": "https://api.github.com/repos/Aaquiff/ei-cd/contents/scalable-integrator/values-staging.yaml",
+          "type": "github/file"
+        },
+        "id": "20d8f7b6-65ec-49b5-b3d4-90a6087b8aac",
+        "matchArtifact": {
+          "id": "496426c2-62cd-4f2b-8f47-fc90705a355c",
+          "name": "values-staging.yaml",
+          "type": "github/file"
+        },
+        "useDefaultArtifact": true,
+        "usePriorArtifact": false
+        }
+      ],
+      "id": "9f48adfe-8362-4024-b059-39f3c2b6a3bd",
+      "index": 1,
+      "keepWaitingPipelines": false,
+      "lastModifiedBy": "anonymous",
+      "limitConcurrent": true,
+      "name": "dummy2",
+      "stages": [
+        {
+        "expectedArtifacts": [
+          {
+          "defaultArtifact": {},
+          "id": "a612c0b4-fa35-470a-a802-756d3d1cda92",
+          "matchArtifact": {
+            "kind": "base64",
+            "name": "",
+            "type": "embedded/base64"
+          },
+          "useDefaultArtifact": false
+          }
+        ],
+        "inputArtifacts": [
+          {
+          "account": "embedded-artifact",
+          "id": "4573e26f-3c44-4e99-8723-09f018454bd8"
+          },
+          {
+          "account": "my-github-artifact-account",
+          "id": "20d8f7b6-65ec-49b5-b3d4-90a6087b8aac"
+          }
+        ],
+        "name": "Bake (Manifest)",
+        "namespace": "wso2",
+        "outputName": "wso2ei-staging",
+        "overrides": {
+          "image": "index.docker.io/aaquiff/wso2ei-6.4.0",
+          "imageCredentials.password": "Aaq4059180",
+          "imageCredentials.username": "Aaquiff",
+          "namespace": "wso2"
+        },
+        "refId": "1",
+        "requisiteStageRefIds": [],
+        "templateRenderer": "HELM2",
+        "type": "bakeManifest"
+        }
+      ],
+      "triggers": [
+        {
+        "enabled": true,
+        "expectedArtifactIds": [
+          "4573e26f-3c44-4e99-8723-09f018454bd8"
+        ],
+        "payloadConstraints": {},
+        "source": "chart",
+        "type": "webhook"
+        }
+      ],
+      "updateTs": "1555408870000"
+    }

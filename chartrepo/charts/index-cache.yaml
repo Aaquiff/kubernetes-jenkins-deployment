@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  scalable-integrator:
+  - apiVersion: v1
+    appVersion: 6.3.0-2
+    created: "2019-04-16T08:24:27Z"
+    description: A Helm chart for the deployment of WSO2 EI Integrator profile
+    digest: 949eb9bbeee343b586aca211c631cf5a3f0a27ffb53595e46c50afa694f94e7e
+    name: scalable-integrator
+    urls:
+    - charts/scalable-integrator-6.3.0-2.tgz
+    version: 6.3.0-2
+generated: "2019-04-16T08:24:57Z"
+serverInfo: {}

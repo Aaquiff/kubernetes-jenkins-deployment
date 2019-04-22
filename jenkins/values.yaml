@@ -4,6 +4,7 @@ confs: confs
 cascConfigs: confs/casc_configs
 wso2Username: <WSO2_USERNAME
 wso2Password: <WSO2_PASSWORD>
+externalRegistry: <true/false>
 registry:
     server: <DOCKER_REGISTRY_SERVER>
     username: <DOCKER_REGISTRY_USERNAME>

@@ -1,0 +1,5 @@
+dependencies:
+- name: spinnaker
+  version: 1.8.1
+  repository: https://kubernetes-charts.storage.googleapis.com
+  condition: redis.enabled
