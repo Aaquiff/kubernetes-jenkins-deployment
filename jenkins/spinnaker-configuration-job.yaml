@@ -1,0 +1,226 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spin
+spec:
+  template:
+    spec:
+      containers:
+      - name: spin
+        image: aaquiff/spin
+        command: ["/bin/sh"]
+        args: ["-c", "sh /spinnaker/run.sh"]
+        env:
+        - name: SPINNAKER_API
+          value: "http://spin-gate.jenkins.svc.cluster.local:8084"
+        volumeMounts: 
+        - name: spinnaker-conf
+          mountPath: /spinnaker
+      restartPolicy: Never
+      volumes:
+      - name: spinnaker-conf
+        configMap:
+          name: spinnaker-conf
+  
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spinnaker-conf
+data:
+  run.sh: |-
+    cd spinnaker
+    spin applications save spintest --file application.json --gate-endpoint http://spin-gate.jenkins.svc.cluster.local:8084
+    spin pipeline save -f pipeline.json --gate-endpoint http://spin-gate.jenkins.svc.cluster.local:8084
+  testapp.yml: |-
+    # set application config here
+    # the `name` key does not need to be set
+    # and will be overridden by the name cli arg
+    email: aaquiff@wso2.com
+    cloudProviders:
+      - kubernetes
+    instancePort: 80
+  application.json: |-
+    {
+      "cloudProviders": [
+        "aws"
+      ],
+      "createTs": "1556521904659",
+      "email": "aaquiff@wso2.com",
+      "instancePort": 81,
+      "lastModifiedBy": "anonymous",
+      "name": "wso2-demo",
+      "providerSettings": {
+        "aws": {
+        "useAmiBlockDeviceMappings": false
+        },
+        "gcp": {
+        "associatePublicIpAddress": false
+        }
+      },
+      "trafficGuards": [],
+      "updateTs": "1556521904000"
+    }
+  pipeline.json: |-
+    {
+      "application": "wso2-demo",
+      "expectedArtifacts": [
+        {
+        "defaultArtifact": {
+          "customKind": true,
+          "id": "a59e9084-8ab1-4013-9d9b-f5686199e3ff"
+        },
+        "id": "4573e26f-3c44-4e99-8723-09f018454bd8",
+        "matchArtifact": {
+          "id": "ddae3488-cc22-4376-b758-c92616c1e7a6",
+          "name": ".*\\.tgz",
+          "type": "embedded/base64"
+        },
+        "useDefaultArtifact": false,
+        "usePriorArtifact": true
+        },
+        {
+        "defaultArtifact": {
+          "customKind": true,
+          "id": "7fc491c8-45da-4cbb-8ffc-a68115857c9c"
+        },
+        "id": "3cec78c7-32f7-4562-b6f9-93483a14aa67",
+        "matchArtifact": {
+          "id": "a6fa87e9-0731-44e3-87aa-19984d939a7b",
+          "name": "values-staging.yaml",
+          "type": "embedded/base64"
+        },
+        "useDefaultArtifact": false,
+        "usePriorArtifact": false
+        },
+        {
+        "defaultArtifact": {
+          "customKind": true,
+          "id": "027e4d3e-2a9a-43f8-b891-aabf4ed82ecf"
+        },
+        "id": "d9cb6200-4947-4439-b944-187bb29344bc",
+        "matchArtifact": {
+          "id": "f7b2a768-d388-4293-9071-58aaecdfc18d",
+          "name": "values-prod.yaml",
+          "type": "embedded/base64"
+        },
+        "useDefaultArtifact": false,
+        "usePriorArtifact": false
+        }
+      ],
+      "id": "9f48adfe-8362-4024-b059-39f3c2b6a3bd",
+      "index": 0,
+      "keepWaitingPipelines": false,
+      "lastModifiedBy": "anonymous",
+      "limitConcurrent": true,
+      "name": "demo",
+      "stages": [
+        {
+        "expectedArtifacts": [
+          {
+          "defaultArtifact": {},
+          "id": "a612c0b4-fa35-470a-a802-756d3d1cda92",
+          "matchArtifact": {
+            "kind": "base64",
+            "name": "wso2ei-staging",
+            "type": "embedded/base64"
+          },
+          "useDefaultArtifact": false
+          }
+        ],
+        "inputArtifacts": [
+          {
+          "account": "embedded-artifact",
+          "id": "4573e26f-3c44-4e99-8723-09f018454bd8"
+          },
+          {
+          "account": "embedded-artifact",
+          "id": "3cec78c7-32f7-4562-b6f9-93483a14aa67"
+          }
+        ],
+        "name": "Bake (Manifest) Staging",
+        "namespace": "staging",
+        "outputName": "wso2ei-staging",
+        "overrides": {
+          "image": "index.docker.io/aaquiff/wso2ei-6.4.0",
+          "imageCredentials.password": "Aaq4059180",
+          "imageCredentials.username": "Aaquiff"
+        },
+        "refId": "1",
+        "requisiteStageRefIds": [],
+        "templateRenderer": "HELM2",
+        "type": "bakeManifest"
+        },
+        {
+        "account": "default",
+        "cloudProvider": "kubernetes",
+        "manifestArtifactAccount": "embedded-artifact",
+        "manifestArtifactId": "a612c0b4-fa35-470a-a802-756d3d1cda92",
+        "moniker": {
+          "app": "wso2-demo"
+        },
+        "name": "Deploy (Manifest) Staging",
+        "refId": "2",
+        "relationships": {
+          "loadBalancers": [],
+          "securityGroups": []
+        },
+        "requisiteStageRefIds": [
+          "1",
+          "3"
+        ],
+        "source": "artifact",
+        "type": "deployManifest"
+        },
+        {
+        "expectedArtifacts": [
+          {
+          "defaultArtifact": {},
+          "id": "23f381d9-49cd-461d-a17b-abf9a0cbde6c",
+          "matchArtifact": {
+            "kind": "base64",
+            "name": "wso2ei-prod",
+            "type": "embedded/base64"
+          },
+          "useDefaultArtifact": false
+          }
+        ],
+        "inputArtifacts": [
+          {
+          "account": "embedded-artifact",
+          "id": "4573e26f-3c44-4e99-8723-09f018454bd8"
+          },
+          {
+          "account": "embedded-artifact",
+          "id": "d9cb6200-4947-4439-b944-187bb29344bc"
+          }
+        ],
+        "name": "Bake (Manifest) Production",
+        "namespace": "prod",
+        "outputName": "wso2ei-prod",
+        "overrides": {
+          "image": "index.docker.io/aaquiff/wso2ei-6.4.0",
+          "imageCredentials.password": "Aaq4059180",
+          "imageCredentials.username": "Aaquiff"
+        },
+        "refId": "3",
+        "requisiteStageRefIds": [],
+        "templateRenderer": "HELM2",
+        "type": "bakeManifest"
+        }
+      ],
+      "triggers": [
+        {
+        "enabled": true,
+        "expectedArtifactIds": [
+          "4573e26f-3c44-4e99-8723-09f018454bd8",
+          "3cec78c7-32f7-4562-b6f9-93483a14aa67"
+        ],
+        "payloadConstraints": {},
+        "source": "chart",
+        "type": "webhook"
+        }
+      ],
+      "updateTs": "1556613121000"
+      }

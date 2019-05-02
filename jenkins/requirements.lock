@@ -2,5 +2,8 @@ dependencies:
 - name: spinnaker
   repository: https://kubernetes-charts.storage.googleapis.com
   version: 1.8.1
-digest: sha256:9a960e49404211bfe5faca6b6ac5cb531c5565f609361db076cb32a361387e3e
-generated: 2019-04-17T16:45:45.817054+05:30
+- name: docker-registry
+  repository: https://kubernetes-charts.storage.googleapis.com
+  version: 1.8.0
+digest: sha256:ea49ffa93decf53b549e6886529bac7204825a85371584801e6ee28d110973b4
+generated: 2019-04-30T17:08:21.352268+05:30

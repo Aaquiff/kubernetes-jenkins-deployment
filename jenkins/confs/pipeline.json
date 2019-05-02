@@ -37,7 +37,7 @@
  "keepWaitingPipelines": false,
  "lastModifiedBy": "anonymous",
  "limitConcurrent": true,
- "name": "dummy",
+ "name": "dummy2",
  "stages": [
   {
    "expectedArtifacts": [

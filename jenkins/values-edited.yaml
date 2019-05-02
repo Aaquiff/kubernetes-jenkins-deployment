@@ -9,3 +9,18 @@ registry:
     username: aaquiff
     password: Aaq4059180
     email: aaquiff@gmail.com
+
+spinnaker:
+    dockerRegistries:
+    - name: dockerhub
+      address: index.docker.io
+      username: aaquiff
+      password: Aaq4059180
+      email: aaquiff@gmail.com
+      repositories:
+        - aaquiff/wso2ei-6.4.0
+        - aaquiff/socat
+    halyard:
+      spinnakerVersion: 1.13.6
+      image:
+        tag: 1.19.2
