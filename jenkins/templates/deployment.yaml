@@ -73,6 +73,14 @@ spec:
           mountPath: /secrets/registry-credentials-pod
         - name: kube-conf
           mountPath: root/kube-conf
+      initContainers:
+      - image: alpine/helm:2.9.0
+        name: helm-config
+        command: ["/bin/sh"]
+        args: ["-c", "helm init --client-only"]
+        volumeMounts:
+        - name: helm-conf
+          mountPath: "/root/.helm"
       containers:
       - image: {{ .Values.image }}
         name: jenkins
@@ -116,6 +124,7 @@ spec:
             - wum version
             - docker version
             - kubectl version
+            - helm repo list
         securityContext:
           runAsUser: 0
         volumeMounts:
@@ -129,6 +138,8 @@ spec:
           mountPath: /wso2creds
         - name: jenkins-casc-conf
           mountPath: /var/casc_configs
+        - name: helm-conf
+          mountPath: "/root/.helm"
         ports:
         - containerPort: 8080
           name: jenkins
@@ -160,3 +171,5 @@ spec:
       - name: kube-conf
         configMap:
           name: kube-conf
+      - name: helm-conf
+        emptyDir: {}
