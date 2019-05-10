@@ -17,14 +17,34 @@ kind: ConfigMap
 metadata:
   name: jenkins-casc-conf
 data:
-  {{- $file := .Files }}
-  {{- $config := printf "%s/*" .Values.cascConfigs -}}
-  {{- range $path, $byte := .Files.Glob $config }}
-  {{- $list := $path | splitList "/"}}
-  {{- $length := len $list }}
-  {{- $last := add $length -1 }}
-  {{ index $list $last }}: |-
-    {{- range $file.Lines $path }}
-    {{ . }}
-    {{- end }}
-  {{- end }}
+  global-config.yaml: |-
+    unclassified:
+      globalLibraries:
+        libraries:
+          - name: "wso2-jenkins-shared-lib"
+            defaultVersion: master
+            retriever:
+              modernSCM:
+                scm:
+                  git:
+                    remote: "https://github.com/Aaquiff/jenkins-shared-lib"
+  jobs.yaml: |-
+    jobs:
+      - script: >
+          pipelineJob('wso2ei') {
+            definition {
+              cpsScm {
+                scm {
+                  github('{{ .Values.repo.owner }}/{{ .Values.repo.name }}')
+                }
+              }
+            }
+            triggers {
+              configure {
+                it / 'triggers' << 'com.cloudbees.jenkins.GitHubPushTrigger'{
+                    spec''
+                }
+                scm('* * * * *')
+              }
+            }
+          }
