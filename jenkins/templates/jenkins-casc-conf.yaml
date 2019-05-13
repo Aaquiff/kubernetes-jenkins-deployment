@@ -35,7 +35,7 @@ data:
             definition {
               cpsScm {
                 scm {
-                  github('{{ .Values.repo.owner }}/{{ .Values.repo.name }}')
+                  github('{{ .Values.sampleRepo.owner }}/{{ .Values.sampleRepo.name }}')
                 }
               }
             }
