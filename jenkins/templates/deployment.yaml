@@ -69,8 +69,6 @@ spec:
         - name: kubectl-jenkins-context
           mountPath: "/kubectl-config-context.sh"
           subPath: "kubectl-config-context.sh"
-        - name: registry-credentials-pod
-          mountPath: /secrets/registry-credentials-pod
         - name: kube-conf
           mountPath: root/kube-conf
       initContainers:
@@ -112,8 +110,6 @@ spec:
               key: password
         - name: CASC_JENKINS_CONFIG
           value: "/var/casc_configs"
-        - name: PROD_CONFIG_LOCATION
-          value: "/var/prod-config"
         imagePullPolicy: Always
         readinessProbe:
           periodSeconds: 10
