@@ -98,15 +98,15 @@ data:
         {
         "defaultArtifact": {
           "id": "beebe844-426d-46ee-9a9f-b13eeb251717",
-          "name": "index.docker.io/aaquiff/wso2ei-6.4.0",
-          "reference": "index.docker.io/aaquiff/wso2ei-6.4.0",
+          "name": "{{ .Values.registry.address}}/{{ .Values.dockerRepo.org}}/{{ .Values.dockerRepo.repo}}",
+          "reference": "{{ .Values.registry.address}}/{{ .Values.dockerRepo.org}}/{{ .Values.dockerRepo.repo}}",
           "type": "docker/image"
         },
         "displayName": "rotten-catfish-66",
         "id": "ac0f7833-c764-40fc-a37a-f6a546b72db3",
         "matchArtifact": {
           "id": "a8417d7f-2fa1-4d7b-a06b-e9610d5604fa",
-          "name": "index.docker.io/aaquiff/wso2ei-6.4.0",
+          "name": "{{ .Values.registry.address}}/{{ .Values.dockerRepo.org}}/{{ .Values.dockerRepo.repo}}",
           "type": "docker/image"
         },
         "useDefaultArtifact": true,
@@ -149,10 +149,9 @@ data:
         "namespace": "staging",
         "outputName": "wso2ei-staging",
         "overrides": {
-          "image": "index.docker.io/aaquiff/wso2ei-6.4.0",
-          "imageCredentials.password": "Aaq4059180",
-          "imageCredentials.registry": "index.docker.io",
-          "imageCredentials.username": "Aaquiff"
+          "imageCredentials.password": "{{ .Values.registry.password }}",
+          "imageCredentials.registry": "{{ .Values.registry.address }}",
+          "imageCredentials.username": "{{ .Values.registry.username }}"
         },
         "refId": "1",
         "requisiteStageRefIds": [],
@@ -167,7 +166,7 @@ data:
         "moniker": {
           "app": "wso2-demo"
         },
-        "name": "Deploy (Manifest)",
+        "name": "Deploy (Manifest) Staging",
         "refId": "2",
         "relationships": {
           "loadBalancers": [],
@@ -213,10 +212,9 @@ data:
         "namespace": "prod",
         "outputName": "wso2ei-prod",
         "overrides": {
-          "image": "index.docker.io/aaquiff/wso2ei-6.4.0",
-          "imageCredentials.password": "Aaq4059180",
-          "imageCredentials.registry": "index.docker.io",
-          "imageCredentials.username": "Aaquiff"
+          "imageCredentials.password": "{{ .Values.registry.password }}",
+          "imageCredentials.registry": "{{ .Values.registry.address }}",
+          "imageCredentials.username": "{{ .Values.registry.username }}"
         },
         "refId": "3",
         "requisiteStageRefIds": [],
@@ -231,7 +229,7 @@ data:
         "moniker": {
           "app": "wso2-demo"
         },
-        "name": "Deploy (Manifest)",
+        "name": "Deploy (Manifest) Production",
         "refId": "4",
         "relationships": {
           "loadBalancers": [],
@@ -241,11 +239,38 @@ data:
           "ac0f7833-c764-40fc-a37a-f6a546b72db3"
         ],
         "requisiteStageRefIds": [
-          "2"
+          "6"
         ],
         "skipExpressionEvaluation": false,
         "source": "artifact",
         "type": "deployManifest"
+        },
+        {
+        "command": "test.sh",
+        "failPipeline": true,
+        "name": "Test Script",
+        "refId": "5",
+        "repoBranch": "master",
+        "repoUrl": "https://github.com/{{ .Values.sampleRepo.owner }}/{{ .Values.sampleRepo.name }}",
+        "requisiteStageRefIds": [
+          "2"
+        ],
+        "scriptPath": "tests",
+        "type": "script",
+        "user": "[anonymous]",
+        "waitForCompletion": true
+        },
+        {
+          "failPipeline": true,
+          "isNew": true,
+          "judgmentInputs": [],
+          "name": "Manual Judgment",
+          "notifications": [],
+          "refId": "6",
+          "requisiteStageRefIds": [
+            "5"
+          ],
+          "type": "manualJudgment"
         }
       ],
       "triggers": [
@@ -266,14 +291,14 @@ data:
         "expectedArtifactIds": [
           "ac0f7833-c764-40fc-a37a-f6a546b72db3"
         ],
-        "organization": "aaquiff",
-        "registry": "index.docker.io",
-        "repository": "aaquiff/wso2ei-6.4.0",
+        "organization": "{{ .Values.dockerRepo.org }}",
+        "registry": "{{ .Values.registry.address }}",
+        "repository": "{{ .Values.dockerRepo.org }}/{{ .Values.dockerRepo.repo }}",
         "type": "docker"
         }
       ],
-      "updateTs": "1557122890000"
-    }
+      "updateTs": "1557476159000"
+      }
 
 ---
 
