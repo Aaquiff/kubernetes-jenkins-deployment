@@ -1,0 +1,5 @@
+while true; do JENKINS_POD=`kubectl get pods --selector=app=jenkins -o json -o jsonpath={.items[0].metadata.name}`; kubectl port-forward $JENKINS_POD 8080; done
+
+while true; do SPIN_DECK_POD=`kubectl get pods --selector=app=spin --selector=app.kubernetes.io/name=deck -o json -o jsonpath={.items[0].metadata.name}`;  kubectl port-forward $SPIN_DECK_POD 9000; done
+
+while true; do SPIN_GATE_POD=`kubectl get pods --selector=app=spin --selector=app.kubernetes.io/name=gate -o json -o jsonpath={.items[0].metadata.name}`; kubectl port-forward $SPIN_GATE_POD 8084; done
