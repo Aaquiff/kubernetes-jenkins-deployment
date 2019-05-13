@@ -16,7 +16,7 @@ spec:
         args: ["-c", "sh /spinnaker/run.sh"]
         env:
         - name: SPINNAKER_API
-          value: "http://spin-gate.jenkins.svc.cluster.local:8084"
+          value: "http://spin-gate.{{ .Release.Namespace }}.svc.cluster.local:8084"
         volumeMounts: 
         - name: spinnaker-conf
           mountPath: /spinnaker
@@ -35,8 +35,8 @@ metadata:
 data:
   run.sh: |-
     cd spinnaker
-    until spin application list --gate-endpoint http://spin-gate.jenkins.svc.cluster.local:8084; do  echo "Retrying in 10s"; sleep 10; done;
-    spin applications save spintest --file application.json --gate-endpoint http://spin-gate.jenkins.svc.cluster.local:8084 && spin pipeline save -f pipeline.json --gate-endpoint http://spin-gate.jenkins.svc.cluster.local:8084
+    until spin application list --gate-endpoint $SPINNAKER_API; do  echo "Retrying in 10s"; sleep 10; done;
+    spin applications save spintest --file application.json --gate-endpoint $SPINNAKER_API && spin pipeline save -f pipeline.json --gate-endpoint $SPINNAKER_API
   application.json: |-
     {
       "cloudProviders": "kubernetes",
