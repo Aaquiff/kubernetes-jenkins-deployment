@@ -1,0 +1,481 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spin
+  annotations:
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+    "helm.sh/hook-weight": "0"
+spec:
+  template:
+    spec:
+      containers:
+      - name: spin
+        image: aaquiff/spin
+        command: ["/bin/sh"]
+        args: ["-c", "sh /spinnaker/run.sh"]
+        env:
+        - name: SPINNAKER_API
+          value: "http://spin-gate.jenkins.svc.cluster.local:8084"
+        volumeMounts: 
+        - name: spinnaker-conf
+          mountPath: /spinnaker
+      restartPolicy: Never
+      volumes:
+      - name: spinnaker-conf
+        configMap:
+          name: spinnaker-conf
+  
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spinnaker-conf
+data:
+  run.sh: |-
+    cd spinnaker
+    until spin application list --gate-endpoint http://spin-gate.jenkins.svc.cluster.local:8084; do  echo "Retrying in 10s"; sleep 10; done;
+    spin applications save spintest --file application.json --gate-endpoint http://spin-gate.jenkins.svc.cluster.local:8084 && spin pipeline save -f pipeline.json --gate-endpoint http://spin-gate.jenkins.svc.cluster.local:8084
+  application.json: |-
+    {
+      "cloudProviders": "kubernetes",
+      "email": "aaquiff@wso2.com",
+      "lastModifiedBy": "anonymous",
+      "name": "wso2-demo",
+      "trafficGuards": [],
+      "user": "[anonymous]"
+    }
+  pipeline.json: |-
+    {
+      "application": "wso2-demo",
+      "expectedArtifacts": [
+        {
+        "defaultArtifact": {
+          "customKind": true,
+          "id": "56330e63-2a3a-4979-a432-043e0c653685"
+        },
+        "displayName": "chart",
+        "id": "4397cbfc-50f8-4244-b721-2a35d8e04715",
+        "matchArtifact": {
+          "id": "7f76f43f-37fd-4410-81f2-c1acd4cf8422",
+          "name": ".*\\.tgz",
+          "type": "embedded/base64"
+        },
+        "useDefaultArtifact": false,
+        "usePriorArtifact": true
+        },
+        {
+        "defaultArtifact": {
+          "customKind": true,
+          "id": "1db24043-0cd0-4511-b645-e4fa7f52a689"
+        },
+        "displayName": "values-staging.yaml",
+        "id": "aec2c4f1-2cb2-4d50-962a-dedc2a7457e0",
+        "matchArtifact": {
+          "id": "d98b429d-0a8e-4c3e-87d1-d57974f0c6ae",
+          "name": "values-staging.yaml",
+          "type": "embedded/base64"
+        },
+        "useDefaultArtifact": false,
+        "usePriorArtifact": true
+        },
+        {
+        "defaultArtifact": {
+          "customKind": true,
+          "id": "3b6e0f4b-df2f-4434-a081-b000c0b08c00"
+        },
+        "displayName": "values-prod.yaml",
+        "id": "14234aae-38d8-424b-9d11-76cbade0e194",
+        "matchArtifact": {
+          "id": "c2ec0634-256c-4ab9-8f81-f1d67ebf6280",
+          "name": "values-prod.yaml",
+          "type": "embedded/base64"
+        },
+        "useDefaultArtifact": false,
+        "usePriorArtifact": true
+        },
+        {
+        "defaultArtifact": {
+          "id": "beebe844-426d-46ee-9a9f-b13eeb251717",
+          "name": "index.docker.io/aaquiff/wso2ei-6.4.0",
+          "reference": "index.docker.io/aaquiff/wso2ei-6.4.0",
+          "type": "docker/image"
+        },
+        "displayName": "rotten-catfish-66",
+        "id": "ac0f7833-c764-40fc-a37a-f6a546b72db3",
+        "matchArtifact": {
+          "id": "a8417d7f-2fa1-4d7b-a06b-e9610d5604fa",
+          "name": "index.docker.io/aaquiff/wso2ei-6.4.0",
+          "type": "docker/image"
+        },
+        "useDefaultArtifact": true,
+        "usePriorArtifact": true
+        }
+      ],
+      "id": "0688995b-96d2-410b-b5af-b50f0a3bd0b0",
+      "index": 0,
+      "keepWaitingPipelines": false,
+      "lastModifiedBy": "anonymous",
+      "limitConcurrent": true,
+      "name": "Deployment Pipeline",
+      "stages": [
+        {
+        "evaluateOverrideExpressions": false,
+        "expectedArtifacts": [
+          {
+          "defaultArtifact": {},
+          "displayName": "staging-chart",
+          "id": "226a10b2-fa11-4ac0-813e-a4556d574721",
+          "matchArtifact": {
+            "kind": "base64",
+            "name": "wso2ei-staging",
+            "type": "embedded/base64"
+          },
+          "useDefaultArtifact": false
+          }
+        ],
+        "inputArtifacts": [
+          {
+          "account": "embedded-artifact",
+          "id": "4397cbfc-50f8-4244-b721-2a35d8e04715"
+          },
+          {
+          "account": "embedded-artifact",
+          "id": "aec2c4f1-2cb2-4d50-962a-dedc2a7457e0"
+          }
+        ],
+        "name": "Bake (Manifest) Staging",
+        "namespace": "staging",
+        "outputName": "wso2ei-staging",
+        "overrides": {
+          "image": "index.docker.io/aaquiff/wso2ei-6.4.0",
+          "imageCredentials.password": "Aaq4059180",
+          "imageCredentials.registry": "index.docker.io",
+          "imageCredentials.username": "Aaquiff"
+        },
+        "refId": "1",
+        "requisiteStageRefIds": [],
+        "templateRenderer": "HELM2",
+        "type": "bakeManifest"
+        },
+        {
+        "account": "default",
+        "cloudProvider": "kubernetes",
+        "manifestArtifactAccount": "embedded-artifact",
+        "manifestArtifactId": "226a10b2-fa11-4ac0-813e-a4556d574721",
+        "moniker": {
+          "app": "wso2-demo"
+        },
+        "name": "Deploy (Manifest)",
+        "refId": "2",
+        "relationships": {
+          "loadBalancers": [],
+          "securityGroups": []
+        },
+        "requiredArtifactIds": [
+          "ac0f7833-c764-40fc-a37a-f6a546b72db3"
+        ],
+        "requisiteStageRefIds": [
+          "1",
+          "3"
+        ],
+        "skipExpressionEvaluation": false,
+        "source": "artifact",
+        "type": "deployManifest"
+        },
+        {
+        "evaluateOverrideExpressions": false,
+        "expectedArtifacts": [
+          {
+          "defaultArtifact": {},
+          "displayName": "production-chart",
+          "id": "c5dfdee9-9b49-40a1-a241-9bb48a1284aa",
+          "matchArtifact": {
+            "kind": "base64",
+            "name": "production-chart",
+            "type": "embedded/base64"
+          },
+          "useDefaultArtifact": false
+          }
+        ],
+        "inputArtifacts": [
+          {
+          "account": "embedded-artifact",
+          "id": "4397cbfc-50f8-4244-b721-2a35d8e04715"
+          },
+          {
+          "account": "embedded-artifact",
+          "id": "14234aae-38d8-424b-9d11-76cbade0e194"
+          }
+        ],
+        "name": "Bake (Manifest) Prod",
+        "namespace": "prod",
+        "outputName": "wso2ei-prod",
+        "overrides": {
+          "image": "index.docker.io/aaquiff/wso2ei-6.4.0",
+          "imageCredentials.password": "Aaq4059180",
+          "imageCredentials.registry": "index.docker.io",
+          "imageCredentials.username": "Aaquiff"
+        },
+        "refId": "3",
+        "requisiteStageRefIds": [],
+        "templateRenderer": "HELM2",
+        "type": "bakeManifest"
+        },
+        {
+        "account": "default",
+        "cloudProvider": "kubernetes",
+        "manifestArtifactAccount": "embedded-artifact",
+        "manifestArtifactId": "c5dfdee9-9b49-40a1-a241-9bb48a1284aa",
+        "moniker": {
+          "app": "wso2-demo"
+        },
+        "name": "Deploy (Manifest)",
+        "refId": "4",
+        "relationships": {
+          "loadBalancers": [],
+          "securityGroups": []
+        },
+        "requiredArtifactIds": [
+          "ac0f7833-c764-40fc-a37a-f6a546b72db3"
+        ],
+        "requisiteStageRefIds": [
+          "2"
+        ],
+        "skipExpressionEvaluation": false,
+        "source": "artifact",
+        "type": "deployManifest"
+        }
+      ],
+      "triggers": [
+        {
+        "enabled": true,
+        "expectedArtifactIds": [
+          "4397cbfc-50f8-4244-b721-2a35d8e04715",
+          "aec2c4f1-2cb2-4d50-962a-dedc2a7457e0",
+          "14234aae-38d8-424b-9d11-76cbade0e194"
+        ],
+        "payloadConstraints": {},
+        "source": "chart",
+        "type": "webhook"
+        },
+        {
+        "account": "dockerhub",
+        "enabled": true,
+        "expectedArtifactIds": [
+          "ac0f7833-c764-40fc-a37a-f6a546b72db3"
+        ],
+        "organization": "aaquiff",
+        "registry": "index.docker.io",
+        "repository": "aaquiff/wso2ei-6.4.0",
+        "type": "docker"
+        }
+      ],
+      "updateTs": "1557122890000"
+    }
+
+---
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spin-jenkins-job-configurator
+  annotations:
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+    "helm.sh/hook-weight": "0"
+spec:
+  template:
+    spec:
+      containers:
+      - name: spin-jenkins-job-configurator
+        image: appropriate/curl
+        command: ["/bin/sh"]
+        args: ["-c", "sh /spinnaker/run.sh"]
+        env:
+        - name: JENKINS_HOST
+          value: "http://jenkins-service.jenkins.svc.cluster.local:8080"
+        - name: JOB_NAME
+          value: "job"
+        volumeMounts: 
+        - name: spinnaker-jenkins-job-conf
+          mountPath: /spinnaker
+      restartPolicy: Never
+      volumes:
+      - name: spinnaker-jenkins-job-conf
+        configMap:
+          name: spinnaker-jenkins-job-conf
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spinnaker-jenkins-job-conf
+data:
+  run.sh: |-
+    cd spinnaker
+    echo "Creating job"
+    cat scriptJobConfig.xml
+    curl -X POST "$JENKINS_HOST/createItem?name=$JOB_NAME" \
+    --data-binary @scriptJobConfig.xml \
+    -H "Content-Type:text/xml"
+  scriptJobConfig.xml: |-
+    <?xml version='1.0' encoding='UTF-8'?>
+    <project>
+      <actions/>
+      <description></description>
+      <logRotator class="hudson.tasks.LogRotator">
+        <daysToKeep>10</daysToKeep>
+        <numToKeep>500</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </logRotator>
+      <keepDependencies>false</keepDependencies>
+      <properties>
+        <hudson.security.AuthorizationMatrixProperty>
+          <permission>hudson.model.Item.Delete:api_team</permission>
+          <permission>hudson.model.Item.Read:api_team</permission>
+          <permission>hudson.model.Run.Delete:api_team</permission>
+          <permission>hudson.model.Item.Workspace:api_team</permission>
+          <permission>hudson.model.Item.Build:api_team</permission>
+          <permission>hudson.scm.SCM.Tag:api_team</permission>
+          <permission>hudson.model.Item.Configure:api_team</permission>
+          <permission>hudson.model.Run.Update:api_team</permission>
+          <permission>hudson.model.Item.Discover:anonymous</permission>
+        </hudson.security.AuthorizationMatrixProperty>
+        <hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@1.7.1">
+          <useBuildBlocker>true</useBuildBlocker>
+          <blockLevel>UNDEFINED</blockLevel>
+          <scanQueueFor>DISABLED</scanQueueFor>
+          <blockingJobs>STASH_MAINTENANCE_DOWNTIME</blockingJobs>
+        </hudson.plugins.buildblocker.BuildBlockerProperty>
+        <com.chikli.hudson.plugin.naginator.NaginatorOptOutProperty plugin="naginator@1.15">
+          <optOut>false</optOut>
+        </com.chikli.hudson.plugin.naginator.NaginatorOptOutProperty>
+        <hudson.model.ParametersDefinitionProperty>
+          <parameterDefinitions>
+            <hudson.model.StringParameterDefinition>
+              <name>TASK_ID</name>
+              <description>Unique Task Id generated by Spinnaker</description>
+              <defaultValue>0</defaultValue>
+            </hudson.model.StringParameterDefinition>
+            <hudson.model.StringParameterDefinition>
+              <name>SCRIPT_PATH</name>
+              <description>Path to the folder hosting the scripts</description>
+              <defaultValue>.</defaultValue>
+            </hudson.model.StringParameterDefinition>
+            <hudson.model.StringParameterDefinition>
+              <name>COMMAND</name>
+              <description>Executable script and parameters</description>
+              <defaultValue></defaultValue>
+            </hudson.model.StringParameterDefinition>
+            <hudson.model.StringParameterDefinition>
+              <name>IMAGE_ID</name>
+              <description>The image ID for this region based on the AMI Spinnaker is deploying</description>
+              <defaultValue></defaultValue>
+            </hudson.model.StringParameterDefinition>
+            <hudson.model.StringParameterDefinition>
+              <name>REGION_PARAM</name>
+              <description>The region the Spinnaker deployment is running against</description>
+              <defaultValue></defaultValue>
+            </hudson.model.StringParameterDefinition>
+            <hudson.model.StringParameterDefinition>
+              <name>ENV_PARAM</name>
+              <description>Environment Spinnaker is running against</description>
+              <defaultValue></defaultValue>
+            </hudson.model.StringParameterDefinition>
+            <hudson.model.StringParameterDefinition>
+              <name>CLUSTER_PARAM</name>
+              <description>The cluster Spinnaker is deploying to</description>
+              <defaultValue></defaultValue>
+            </hudson.model.StringParameterDefinition>
+            <hudson.model.StringParameterDefinition>
+              <name>CMC</name>
+              <description>The CMC this deployment is associated with</description>
+              <defaultValue></defaultValue>
+            </hudson.model.StringParameterDefinition>
+            <hudson.model.StringParameterDefinition>
+              <name>CONTEXT</name>
+              <description>The parameters available to this task</description>
+              <defaultValue></defaultValue>
+            </hudson.model.StringParameterDefinition>
+            <hudson.model.StringParameterDefinition>
+              <name>REPO_URL</name>
+              <description>git repository url.</description>
+              <defaultValue></defaultValue>
+            </hudson.model.StringParameterDefinition>
+          </parameterDefinitions>
+        </hudson.model.ParametersDefinitionProperty>
+        <com.gmail.ikeike443.PlayAutoTestJobProperty plugin="play-autotest-plugin@0.0.12"/>
+        <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.25">
+          <autoRebuild>false</autoRebuild>
+          <rebuildDisabled>false</rebuildDisabled>
+        </com.sonyericsson.rebuild.RebuildSettings>
+        <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.25"/>
+      </properties>
+      <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.0">
+        <configVersion>2</configVersion>
+        <userRemoteConfigs>
+          <hudson.plugins.git.UserRemoteConfig>
+            <name>apidaemon</name>
+            <url>$REPO_URL</url>
+          </hudson.plugins.git.UserRemoteConfig>
+        </userRemoteConfigs>
+        <branches>
+          <hudson.plugins.git.BranchSpec>
+            <name>master</name>
+          </hudson.plugins.git.BranchSpec>
+        </branches>
+        <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+        <browser class="hudson.plugins.git.browser.Stash">
+          <url></url>
+        </browser>
+        <submoduleCfg class="list"/>
+        <extensions>
+          <hudson.plugins.git.extensions.impl.PerBuildTag/>
+          <hudson.plugins.git.extensions.impl.WipeWorkspace/>
+        </extensions>
+      </scm>
+      <canRoam>false</canRoam>
+      <disabled>false</disabled>
+      <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+      <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+      <jdk>Oracle JDK8</jdk>
+      <triggers/>
+      <concurrentBuild>true</concurrentBuild>
+      <builders>
+        <hudson.plugins.descriptionsetter.DescriptionSetterBuilder plugin="description-setter@1.10">
+          <regexp></regexp>
+          <description>TASK=${TASK_ID} REGION=${REGION_PARAM} ENV=${ENV_PARAM} CLUSTER=${CLUSTER_PARAM} IMAGE=${IMAGE_ID} CMC=${CMC} ${SCRIPT_PATH}/${COMMAND} ${CONTEXT}</description>
+        </hudson.plugins.descriptionsetter.DescriptionSetterBuilder>
+        <hudson.tasks.Shell>
+          <command># To run groovy scripts in this stage, you need to add groovy to your path:
+    # export PATH=$PATH:/PATH/TO/GROOVY/bin
+    # To add support for grapes, you need to install the package and add this flag,
+    # pointing to the correct grape root directory.
+    # export JAVA_OPTS=&apos;-Dgrape.root=${WORKSPACE}/.groovy/grape&apos;
+    echo ${TASK_ID}
+    sh ${SCRIPT_PATH}/${COMMAND}</command>
+        </hudson.tasks.Shell>
+      </builders>
+      <publishers>
+        <hudson.tasks.ArtifactArchiver>
+          <artifacts>*.properties, *.json, *.yml</artifacts>
+          <allowEmptyArchive>true</allowEmptyArchive>
+          <onlyIfSuccessful>false</onlyIfSuccessful>
+          <fingerprint>false</fingerprint>
+          <defaultExcludes>true</defaultExcludes>
+        </hudson.tasks.ArtifactArchiver>
+      </publishers>
+      <buildWrappers>
+        <EnvInjectBuildWrapper plugin="envinject@1.91.4">
+          <info>
+            <propertiesContent>PYTHONUNBUFFERED=1
+    P4USER=rolem</propertiesContent>
+            <loadFilesFromMaster>false</loadFilesFromMaster>
+          </info>
+        </EnvInjectBuildWrapper>
+      </buildWrappers>
+    </project>

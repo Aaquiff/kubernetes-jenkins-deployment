@@ -17,14 +17,44 @@ kind: ConfigMap
 metadata:
   name: kube-conf
 data:
-  {{- $file := .Files }}
-  {{- $config := printf "%s/.kube/*" .Values.confs -}}
-  {{- range $path, $byte := .Files.Glob $config }}
-  {{- $list := $path | splitList "/"}}
-  {{- $length := len $list }}
-  {{- $last := add $length -1 }}
-  {{ index $list $last }}: |-
-    {{- range $file.Lines $path }}
-    {{ . }}
-    {{- end }}
-  {{- end }}
+  config: |-
+    apiVersion: v1
+    clusters:
+    - cluster:
+        certificate-authority: production.crt
+        server: https://130.211.115.106
+      name: production
+    contexts:
+    - context:
+        cluster: production
+        namespace: default
+        user: prod-admin
+      name: production
+    current-context: production
+    kind: Config
+    preferences: {}
+    users:
+    - name: prod-admin
+      user:
+        password: udr2dF15uiOvOemV
+        username: admin
+  production.crt: |-
+    -----BEGIN CERTIFICATE-----
+    MIIDCzCCAfOgAwIBAgIQUKkoIVNy18Q3lSKaWRDWOzANBgkqhkiG9w0BAQsFADAv
+    MS0wKwYDVQQDEyQxNWQ4NWY3Yi05MWZhLTRlOWMtYjA3Ni0xODRmYTY5YzBkZGYw
+    HhcNMTkwMzEyMDY0OTUwWhcNMjQwMzEwMDc0OTUwWjAvMS0wKwYDVQQDEyQxNWQ4
+    NWY3Yi05MWZhLTRlOWMtYjA3Ni0xODRmYTY5YzBkZGYwggEiMA0GCSqGSIb3DQEB
+    AQUAA4IBDwAwggEKAoIBAQCkxCqj0nTlAX8ECys6fSBEpLkmLlAmE1T5QX8Ql9Ac
+    AJ0iTdpKLs9f2iBs8ZypC2HBIFMjvD/TJyk5KX1Q0aMFZGvpULZnn/I+dgr0F+It
+    89nV/Vh6ZtROfX8wWd9fn0qw2DdApn0XYacxnt8frxhSD5sjalH76lxuXr7RqH6c
+    t2tZS121gTqNvYOKJGonPaaX8xiImN+FFHIvitO7V+riZ7OEoHMYZy7st/UdNKZF
+    Gm7qaBlUivNSnMESp6DSzSNzjDCl1+J98MXZHWRojwT5aRojWaywKsbLpAG40QT1
+    huNinjrZEQuwDcFn/klVn3fYisVLFZqssQAqu4GuBy4vAgMBAAGjIzAhMA4GA1Ud
+    DwEB/wQEAwICBDAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQB+
+    luYrhq4evalvkDpO7e6om1+SbMo1UckfsmOyxoXvgDilqk+oJTNOBaDlsXpCgKfH
+    BjYBVhI/xyWILMNWiJqcjRtl5IKxU4R5KyZZBmlh3qMVg1HYQhtZWt8iS3wav3IE
+    Q66Wbi0mb8Helz3e4aI7ao/0oWIPfRUf6m0lgdLmVPLPdgmN1H6R78rKb5a4Z1Vr
+    5ufKYgRZ0O75Zkf6TtCWw7Qnxi/hKXpNuSkioxWbppz73I/chzJek7dx35R1wWXt
+    SSYLAKkbzwf5IJYlM6bRP+PhlJTLYDqB18qGd4ikMLv/pPWXBgpO72jciq0CHBOT
+    NOhAqIfLn8KduEM1Qao8
+    -----END CERTIFICATE-----
