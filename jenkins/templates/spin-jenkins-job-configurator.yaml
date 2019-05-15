@@ -38,9 +38,9 @@ data:
   run.sh: |-
     cd spinnaker
     echo "Creating job"
-    cat scriptJobConfig.xml
-    curl -X POST "$JENKINS_HOST/createItem?name=$JOB_NAME" \
+    curl -X POST --fail "$JENKINS_HOST/createItem?name=$JOB_NAME" \
     --data-binary @scriptJobConfig.xml \
+    --user {{ .Values.jenkins.username }}:{{ .Values.jenkins.password }} \
     -H "Content-Type:text/xml"
   scriptJobConfig.xml: |-
     <?xml version='1.0' encoding='UTF-8'?>
