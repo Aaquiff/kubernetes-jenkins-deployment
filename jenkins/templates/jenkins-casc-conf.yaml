@@ -28,23 +28,11 @@ data:
                 scm:
                   git:
                     remote: "https://github.com/Aaquiff/jenkins-shared-lib"
-  jobs.yaml: |-
-    jobs:
-      - script: >
-          pipelineJob('wso2ei') {
-            definition {
-              cpsScm {
-                scm {
-                  github('{{ .Values.sampleRepo.owner }}/{{ .Values.sampleRepo.name }}')
-                }
-              }
-            }
-            triggers {
-              configure {
-                it / 'triggers' << 'com.cloudbees.jenkins.GitHubPushTrigger'{
-                    spec''
-                }
-                scm('* * * * *')
-              }
-            }
-          }
+    jenkins:
+      securityRealm:
+        local:
+          allowsSignup: false
+          users:
+            - id: "{{ .Values.jenkins.username }}"
+              password: "{{ .Values.jenkins.password }}"
+      authorizationStrategy: loggedInUsersCanDoAnything
