@@ -1,9 +1,9 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: spin-jenkins-job-configurator
+  name: spinnaker-jenkins-job-configurator
   annotations:
-    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook": "post-install"
     "helm.sh/hook-delete-policy": "before-hook-creation"
     "helm.sh/hook-weight": "0"
 spec:
@@ -16,7 +16,7 @@ spec:
         args: ["-c", "sh /spinnaker/run.sh"]
         env:
         - name: JENKINS_HOST
-          value: "http://jenkins-service.jenkins.svc.cluster.local:8080"
+          value: "http://jenkins-service.{{ .Release.Namespace }}.svc.cluster.local:8080"
         - name: JOB_NAME
           value: "job"
         volumeMounts: 
@@ -38,9 +38,9 @@ data:
   run.sh: |-
     cd spinnaker
     echo "Creating job"
-    cat scriptJobConfig.xml
-    curl -X POST "$JENKINS_HOST/createItem?name=$JOB_NAME" \
+    curl -X POST --fail "$JENKINS_HOST/createItem?name=$JOB_NAME" \
     --data-binary @scriptJobConfig.xml \
+    --user {{ .Values.jenkins.username }}:{{ .Values.jenkins.password }} \
     -H "Content-Type:text/xml"
   scriptJobConfig.xml: |-
     <?xml version='1.0' encoding='UTF-8'?>

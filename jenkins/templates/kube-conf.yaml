@@ -13,48 +13,29 @@
 # limitations under the License.
 
 apiVersion: v1
-kind: ConfigMap
+kind: Secret
 metadata:
   name: kube-conf
-data:
+type: Opaque
+stringData:
   config: |-
     apiVersion: v1
     clusters:
     - cluster:
-        certificate-authority: production.crt
-        server: https://130.211.115.106
-      name: production
+        certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURERENDQWZTZ0F3SUJBZ0lSQU9EZGpFMWJ6d0M2a1NyUzRvSTBZRVl3RFFZSktvWklodmNOQVFFTEJRQXcKTHpFdE1Dc0dBMVVFQXhNa01UWXdNak5sTmpjdE1XRTVOQzAwTURSa0xXRTRNR0l0WWpZMU16RTNOR000TURnMwpNQjRYRFRFNU1ERXpNREF6TVRBeE0xb1hEVEkwTURFeU9UQTBNVEF4TTFvd0x6RXRNQ3NHQTFVRUF4TWtNVFl3Ck1qTmxOamN0TVdFNU5DMDBNRFJrTFdFNE1HSXRZalkxTXpFM05HTTRNRGczTUlJQklqQU5CZ2txaGtpRzl3MEIKQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBeWNodng4R3BFcUFTaEZTTDhaTE9XZTZTclBTL1Vhd2w2bW5MZ3lrUwpJR2xoWUFrZ2tsSmtVcGREdzZMeTVkM1dvYk1zckI3cFJFUWtXOUdxN1JvclBUdmtJazZiN2tWMEpvaXVmK1NMCjR2VHV0VElzQ2ZLRGNJRjVuZU1mTWFMWjE1UGRWUit6bHB1OXNLQ29uM2QvdTJrRFNOTlJsdElNcUZybHJPekwKVDZXcjJYVUVzdnYxOE5YVlIxL0hvakRWTE9YWmQ4T0VybDROT0tZbnExVmdnK0gwRVQwNDRKYnJwVGxQN3h2bwpERDVQeEtqcjI5QmJFNHhOQWM5ZG51M2FvMWNGNUZJNlR1MHJPajRFeWcwQ0laUmVuUDV3NFZuL3FhUHBsLzBzCmY1aW5YK2syNDdTaUNSV29wV0twMllIand3Nm43UUlLVHNNUGJSZVlNRzFvSHdJREFRQUJveU13SVRBT0JnTlYKSFE4QkFmOEVCQU1DQWdRd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQQppM0dDTUI2U3NXdVY0TWlNSmhjQUt5YUdueDJiNUhZZmZlVitscWFZd3ZiaWovamt6T3lYV1Y3d3NoOEdzUi9NCldKQ2pia1JQWXZGZEhXbFNxOFc4NWVQWHJLUnVITTVTN2lxbmFnd25xanVUbnJiK0VTTVVkcS9BTlBGODJhaTUKU0RBL0EvczJRL2FRNU1YdWp0UjVvT3ZUSmxHV0hVbTQ3TFRSUDNkU3Nvdk5LTmpyYlY4ZWlDMTZtb2FiaHZwRApyaWw4Wlc5WnB5ZlJFbmFLNXZPbDBhYWo1am9JNDhuR0hkV0hMbmpyV3ZFc3lFYkFSdkVQemRMWlVPcnpvbGk1Cml4R1YyR0FoNEY3NEhIM0kxdDE3UTVpL3BQNmpCeWxiSUpaMDBkWUlpSlQ4aFpxc0xFcTZCbUZ3ZUZENXdLZEMKSE15cFAvaDRCZDJFREJxYU5xUWhLdz09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+        server: https://35.193.151.235
+      name: id-cd
     contexts:
     - context:
-        cluster: production
+        cluster: id-cd
         namespace: default
-        user: prod-admin
-      name: production
-    current-context: production
+        user: staging-admin
+      name: staging
+    current-context: staging
     kind: Config
     preferences: {}
     users:
-    - name: prod-admin
+    - name: staging-admin
       user:
-        password: udr2dF15uiOvOemV
+        password: fJrsRVDUyagmRjiy
         username: admin
-  production.crt: |-
-    -----BEGIN CERTIFICATE-----
-    MIIDCzCCAfOgAwIBAgIQUKkoIVNy18Q3lSKaWRDWOzANBgkqhkiG9w0BAQsFADAv
-    MS0wKwYDVQQDEyQxNWQ4NWY3Yi05MWZhLTRlOWMtYjA3Ni0xODRmYTY5YzBkZGYw
-    HhcNMTkwMzEyMDY0OTUwWhcNMjQwMzEwMDc0OTUwWjAvMS0wKwYDVQQDEyQxNWQ4
-    NWY3Yi05MWZhLTRlOWMtYjA3Ni0xODRmYTY5YzBkZGYwggEiMA0GCSqGSIb3DQEB
-    AQUAA4IBDwAwggEKAoIBAQCkxCqj0nTlAX8ECys6fSBEpLkmLlAmE1T5QX8Ql9Ac
-    AJ0iTdpKLs9f2iBs8ZypC2HBIFMjvD/TJyk5KX1Q0aMFZGvpULZnn/I+dgr0F+It
-    89nV/Vh6ZtROfX8wWd9fn0qw2DdApn0XYacxnt8frxhSD5sjalH76lxuXr7RqH6c
-    t2tZS121gTqNvYOKJGonPaaX8xiImN+FFHIvitO7V+riZ7OEoHMYZy7st/UdNKZF
-    Gm7qaBlUivNSnMESp6DSzSNzjDCl1+J98MXZHWRojwT5aRojWaywKsbLpAG40QT1
-    huNinjrZEQuwDcFn/klVn3fYisVLFZqssQAqu4GuBy4vAgMBAAGjIzAhMA4GA1Ud
-    DwEB/wQEAwICBDAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQB+
-    luYrhq4evalvkDpO7e6om1+SbMo1UckfsmOyxoXvgDilqk+oJTNOBaDlsXpCgKfH
-    BjYBVhI/xyWILMNWiJqcjRtl5IKxU4R5KyZZBmlh3qMVg1HYQhtZWt8iS3wav3IE
-    Q66Wbi0mb8Helz3e4aI7ao/0oWIPfRUf6m0lgdLmVPLPdgmN1H6R78rKb5a4Z1Vr
-    5ufKYgRZ0O75Zkf6TtCWw7Qnxi/hKXpNuSkioxWbppz73I/chzJek7dx35R1wWXt
-    SSYLAKkbzwf5IJYlM6bRP+PhlJTLYDqB18qGd4ikMLv/pPWXBgpO72jciq0CHBOT
-    NOhAqIfLn8KduEM1Qao8
-    -----END CERTIFICATE-----

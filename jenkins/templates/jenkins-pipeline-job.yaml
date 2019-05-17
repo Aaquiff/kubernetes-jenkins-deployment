@@ -1,0 +1,92 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: jenkins-job-creator
+  annotations:
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+    "helm.sh/hook-weight": "0"
+spec:
+  template:
+    spec:
+      containers:
+      - name: jenkins-job-creator
+        image: appropriate/curl
+        command: ["/bin/sh"]
+        args: ["-c", "sh /jenkins/run.sh"]
+        env:
+        - name: JENKINS
+          value: "http://jenkins-service.{{ .Release.Namespace }}.svc.cluster.local:8080"
+        - name: USERNAME
+          value: {{ .Values.jenkins.username }}
+        - name: PASSWORD
+          value: {{ .Values.jenkins.password }}
+        volumeMounts: 
+        - name: jenkins-job-conf
+          mountPath: /jenkins
+      restartPolicy: Never
+      volumes:
+      - name: jenkins-job-conf
+        configMap:
+          name: jenkins-job-conf
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jenkins-job-conf
+data:
+  run.sh: |-
+    cd /jenkins
+    {{- range .Values.applications }}
+    curl -s -XPOST "$JENKINS/createItem?name={{ .name }}" --data-binary @{{ .name }}.xml -H "Content-Type:text/xml" --user $USERNAME:$PASSWORD
+    {{- end }}
+  {{- range .Values.applications }}
+  {{ .name }}.xml: |-
+    <flow-definition plugin="workflow-job@2.31">
+        <actions/>
+        <description/>
+        <keepDependencies>false</keepDependencies>
+        <properties>
+            <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.29.4">
+                <projectUrl>{{ .repoUrl }}/</projectUrl>
+            </com.coravy.hudson.plugins.github.GithubProjectProperty>
+            <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+                <triggers>
+                    <com.cloudbees.jenkins.GitHubPushTrigger plugin="github@1.29.4">
+                        <spec/>
+                    </com.cloudbees.jenkins.GitHubPushTrigger>
+                    <hudson.triggers.SCMTrigger>
+                        <spec>* * * * *</spec>
+                        <ignorePostCommitHooks>false</ignorePostCommitHooks>
+                    </hudson.triggers.SCMTrigger>
+                </triggers>
+            </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+        </properties>
+        <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@2.63">
+            <scm class="hudson.plugins.git.GitSCM" plugin="git@3.9.3">
+                <configVersion>2</configVersion>
+                <userRemoteConfigs>
+                    <hudson.plugins.git.UserRemoteConfig>
+                        <url>{{ .repoUrl }}.git</url>
+                    </hudson.plugins.git.UserRemoteConfig>
+                </userRemoteConfigs>
+                <branches>
+                    <hudson.plugins.git.BranchSpec>
+                        <name>**</name>
+                    </hudson.plugins.git.BranchSpec>
+                </branches>
+                <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+                <gitTool>Default</gitTool>
+                <browser class="hudson.plugins.git.browser.GithubWeb">
+                    <url>{{ .repoUrl }}/</url>
+                </browser>
+                <extensions/>
+            </scm>
+            <scriptPath>Jenkinsfile</scriptPath>
+            <lightweight>false</lightweight>
+        </definition>
+        <disabled>false</disabled>
+    </flow-definition>
+    {{- end }}

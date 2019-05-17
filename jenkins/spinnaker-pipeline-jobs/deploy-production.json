@@ -1,0 +1,65 @@
+{
+  "application": "<APPLICATION>",
+  "name": "Deploy Production",
+  "expectedArtifacts": [
+    {
+      "defaultArtifact": {
+        "customKind": true,
+        "id": "56330e63-2a3a-4979-a432-043e0c653685"
+      },
+      "displayName": "production-chart",
+      "id": "4397cbfc-50f8-4244-b721-2a35d8e04715",
+      "matchArtifact": {
+        "id": "7f76f43f-37fd-4410-81f2-c1acd4cf8422",
+        "name": "production-chart",
+        "type": "embedded/base64"
+      },
+      "useDefaultArtifact": false,
+      "usePriorArtifact": true
+    },
+    {
+      "defaultArtifact": {
+        "customKind": true,
+        "id": "d0960d0c-5294-408d-a24b-81ec1537abd8"
+      },
+      "displayName": "tiny-cobra-40",
+      "id": "de51a05a-c9ce-4621-b8e3-c5ba334ec01c",
+      "matchArtifact": {
+        "id": "152022db-5a95-4963-a88c-3e7f3e31af01",
+        "name": "<DOCKER_IMAGE>",
+        "type": "docker/image"
+      },
+      "useDefaultArtifact": false,
+      "usePriorArtifact": true
+    }
+  ],
+  "keepWaitingPipelines": false,
+  "lastModifiedBy": "anonymous",
+  "limitConcurrent": true,
+  "stages": [
+    {
+      "account": "default",
+      "cloudProvider": "kubernetes",
+      "manifestArtifactAccount": "embedded-artifact",
+      "manifestArtifactId": "4397cbfc-50f8-4244-b721-2a35d8e04715",
+      "moniker": {
+        "app": "<APPLICATION>"
+      },
+      "name": "Deploy (Manifest) Production",
+      "refId": "4",
+      "relationships": {
+        "loadBalancers": [],
+        "securityGroups": []
+      },
+      "requiredArtifactIds": [
+        "de51a05a-c9ce-4621-b8e3-c5ba334ec01c"
+      ],
+      "requisiteStageRefIds": [],
+      "skipExpressionEvaluation": false,
+      "source": "artifact",
+      "type": "deployManifest"
+    }
+  ],
+  "triggers": [],
+  "updateTs": "1558004473000"
+}

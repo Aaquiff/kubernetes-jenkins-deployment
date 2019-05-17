@@ -1,0 +1,72 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spinnaker-pipeline-creator
+  annotations:
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+    "helm.sh/hook-weight": "0"
+spec:
+  template:
+    spec:
+      containers:
+      - name: spin
+        image: aaquiff/spin
+        command: ["/bin/sh"]
+        args: ["-c", "sh /spinnaker/run.sh"]
+        env:
+        - name: SPINNAKER_API
+          value: "http://spin-gate.{{ .Release.Namespace }}.svc.cluster.local:8084"
+        volumeMounts: 
+        - name: spinnaker-conf
+          mountPath: /spinnaker
+      restartPolicy: Never
+      volumes:
+      - name: spinnaker-conf
+        configMap:
+          name: spinnaker-conf
+  
+---
+
+{{- $root := . -}}
+{{- $files := .Files }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spinnaker-conf
+data:
+  run.sh: |-
+    cd spinnaker
+    until spin application list --gate-endpoint $SPINNAKER_API; do  echo "Retrying in 10s"; sleep 10; done;
+    {{- range .Values.applications }}
+    spin applications save spintest --file {{ .name }}.json --gate-endpoint $SPINNAKER_API && \
+    spin pipeline save -f {{ .name }}-deploy-production.json --gate-endpoint $SPINNAKER_API && \
+    id=`spin pipelines get --application {{ .name }} --name "Deploy Production" --output=jsonpath={.id} --gate-endpoint $SPINNAKER_API` && \
+    sed "s|<DEPLOY_PRODUCTION_ID>|$id|" {{ .name }}-deploy-staging.json > ../{{ .name }}-deploy-staging.json && \
+    spin pipeline save -f ../{{ .name }}-deploy-staging.json --gate-endpoint $SPINNAKER_API && \
+    id=`spin pipelines get --application {{ .name }} --name "Deploy Staging" --output=jsonpath={.id} --gate-endpoint $SPINNAKER_API` && \
+    sed "s|<DEPLOY_STAGING_ID>|$id|" {{ .name }}-bake-artifacts.json > ../{{ .name }}-bake-artifacts.json && \
+    spin pipeline save -f ../{{ .name }}-bake-artifacts.json --gate-endpoint $SPINNAKER_API
+    {{- end }}
+  {{- range .Values.applications }}
+  {{ .name }}.json: |-
+    {
+      "cloudProviders": "kubernetes",
+      "email": "{{ .email }}",
+      "lastModifiedBy": "anonymous",
+      "name": "{{ .name }}",
+      "trafficGuards": [],
+      "user": "[anonymous]"
+    }
+  {{- $imageName := printf "%s/%s/%s" .image.registry .image.organization .image.repository }}
+  {{- $bakepipeline := printf "%s-%s" .name "bake-artifacts.json" }}
+  {{- $stagingpipeline := printf "%s-%s" .name "deploy-staging.json" }}
+  {{- $productionpipeline := printf "%s-%s" .name "deploy-production.json" }}
+  
+  {{ ($files.Glob "spinnaker-pipeline-jobs/bake-artifacts.json").AsConfig | replace "<DOCKER_IMAGE>" $imageName | replace "<IMAGE_REGISTRY>" .image.registry | replace "<IMAGE_USERNAME>" .image.username | replace "<IMAGE_PASSWORD>" .image.password | replace "<IMAGE_ORGANIZATION>" .image.organization | replace "<IMAGE_REPOSITORY>" .image.repository | replace "<APPLICATION>" .name | replace "bake-artifacts.json" $bakepipeline | nindent 2 }}
+  
+  {{ ($files.Glob "spinnaker-pipeline-jobs/deploy-staging.json").AsConfig | replace "<DOCKER_IMAGE>" $imageName | replace "<REPO_URL>" .repoUrl | replace "<TESTSCRIPT_COMMAND>" .testScript.command | replace "<TESTSCRIPT_PATH>" .testScript.path | replace "<APPLICATION>" .name | replace "deploy-staging.json" $stagingpipeline | nindent 2 }}
+
+  {{ ($files.Glob "spinnaker-pipeline-jobs/deploy-production.json").AsConfig | replace "<DOCKER_IMAGE>" $imageName | replace "<APPLICATION>" .name | replace "deploy-production.json" $productionpipeline | nindent 2 }}
+
+  {{- end }}
