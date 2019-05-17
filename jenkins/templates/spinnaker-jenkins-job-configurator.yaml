@@ -1,9 +1,9 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: spin-jenkins-job-configurator
+  name: spinnaker-jenkins-job-configurator
   annotations:
-    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook": "post-install"
     "helm.sh/hook-delete-policy": "before-hook-creation"
     "helm.sh/hook-weight": "0"
 spec:
