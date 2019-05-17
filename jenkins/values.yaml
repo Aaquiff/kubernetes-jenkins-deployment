@@ -2,11 +2,79 @@ namespace: jenkins
 image: aaquiff/jenkins-docker-kube:latest
 confs: confs
 cascConfigs: confs/casc_configs
-wso2Username: <WSO2_USERNAME
-wso2Password: <WSO2_PASSWORD>
-externalRegistry: <true/false>
+wso2Username: aaquiff@wso2.com
+wso2Password: 
+
+# Jenkins Admin user credentials
+jenkins:
+  username: aaquiff
+  password: aaquiff
+
+# Credentials for jenkins job to push images to the docker registry
 registry:
-    server: <DOCKER_REGISTRY_SERVER>
-    username: <DOCKER_REGISTRY_USERNAME>
-    password: <DOCKER_REGISTRY_PASSWORD>
-    email: <DOCKER_REGISTRY_EMAIL>
+    server: https://index.docker.io/v1/
+    username: aaquiff
+    password: <PASSWORD>
+    email: aaquiff@gmail.com
+    address: index.docker.io
+
+# Configuration for the spinnaker chart
+spinnaker:
+    dockerRegistries:
+    - name: dockerhub
+      address: index.docker.io
+      username: aaquiff
+      password: 
+      email: aaquiff@gmail.com
+      repositories:
+        - aaquiff/wso2ei-6.4.0
+    halyard:
+      spinnakerVersion: 1.13.6
+      image:
+        tag: 1.19.2
+      additionalScripts:
+        create: true
+        data: 
+          enable_ci.sh: |-
+            echo "Configuring jenkins master"
+            PASSWORD="aaquiff"
+            $HAL_COMMAND config ci jenkins enable
+            echo $PASSWORD | $HAL_COMMAND config ci jenkins master edit master --address http://jenkins-service.jenkins.svc.cluster.local:8080 --username aaquiff --password aaquiff || echo $PASSWORD | $HAL_COMMAND config ci jenkins master add master --address http://jenkins-service.jenkins.svc.cluster.local:8080 --username aaquiff --password
+            $HAL_COMMAND config features edit --pipeline-templates true
+    # kubeConfig:
+    #   enabled: true
+    #   secretName: kube-conf
+    #   secretKey: config
+    #   contexts:
+    #   - staging
+    #   deploymentContext: default
+    #   omiitedNameSpaces:
+    #   - kube-system
+    #   - kube-public
+
+# Applications to be created
+applications:
+  - name: wso2ei
+    repoUrl: https://github.com/Aaquiff/ei-cd
+    email: aaquiff@wso2.com
+    testScript:
+      path: tests
+      command: test.sh
+    image:
+      registry: index.docker.io
+      username: <USERNAME>
+      password: <PASSWORD>
+      organization: aaquiff
+      repository: wso2ei-6.4.0
+  # - name: wso2is
+  #   repoUrl: https://github.com/Aaquiff/ei-cd
+  #   email: aaquiff@wso2.com
+  #   testScript:
+  #     path: tests
+  #     command: tests.sh
+  #   image:
+  #     registry: index.docker.io
+  #     organization: aaquiff
+  #     repository: wso2is-6.4.0
+  #     username: aaquiff
+  #     password: Aaq4059180
