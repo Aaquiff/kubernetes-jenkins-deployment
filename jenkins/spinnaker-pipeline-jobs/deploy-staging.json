@@ -1,6 +1,6 @@
 {
     "application": "<APPLICATION>",
-    "name": "Deploy Dev",
+    "name": "Deploy Staging",
     "expectedArtifacts": [
         {
             "defaultArtifact": {
@@ -24,11 +24,11 @@
                 "customKind": true,
                 "id": "ef99e6d2-5335-4cb9-aa44-3afee04c641a"
             },
-            "displayName": "dev-chart",
+            "displayName": "staging-chart",
             "id": "5fb1c65d-625c-4c17-9e60-9cbf688edad7",
             "matchArtifact": {
                 "id": "7873fd97-34b8-4d3f-aa20-6e9dac6c13dc",
-                "name": "dev-chart",
+                "name": "staging-chart",
                 "type": "embedded/base64"
             },
             "useDefaultArtifact": false,
@@ -48,21 +48,6 @@
             },
             "useDefaultArtifact": false,
             "usePriorArtifact": false
-        },
-        {
-            "defaultArtifact": {
-                "customKind": true,
-                "id": "2f210ffa-7cd7-482c-a6aa-50ea1acfda0f"
-            },
-            "displayName": "staging-chart",
-            "id": "2c294f40-e908-46ac-bd88-3df63b4d8b1d",
-            "matchArtifact": {
-                "id": "0aeaff79-b56f-4524-902a-1fda4cfe1c4d",
-                "name": "staging-chart",
-                "type": "embedded/base64"
-            },
-            "useDefaultArtifact": false,
-            "usePriorArtifact": false
         }
     ],
     "keepWaitingPipelines": false,
@@ -77,7 +62,7 @@
             "moniker": {
                 "app": "<APPLICATION>"
             },
-            "name": "Deploy (Manifest) Dev",
+            "name": "Deploy (Manifest) staging",
             "refId": "2",
             "relationships": {
                 "loadBalancers": [],
@@ -92,13 +77,28 @@
             "type": "deployManifest"
         },
         {
+            "command": "<TESTSCRIPT_COMMAND>",
+            "failPipeline": true,
+            "name": "Test Script",
+            "refId": "5",
+            "repoBranch": "master",
+            "repoUrl": "<REPO_URL>",
+            "requisiteStageRefIds": [
+                "2"
+            ],
+            "scriptPath": "<TESTSCRIPT_PATH>",
+            "type": "script",
+            "user": "[anonymous]",
+            "waitForCompletion": true
+        },
+        {
             "failPipeline": true,
             "judgmentInputs": [],
             "name": "Manual Judgment",
             "notifications": [],
             "refId": "6",
             "requisiteStageRefIds": [
-                "2"
+                "5"
             ],
             "type": "manualJudgment"
         },
@@ -106,7 +106,7 @@
             "application": "<APPLICATION>",
             "failPipeline": true,
             "name": "Pipeline",
-            "pipeline": "<DEPLOY_STAGING_ID>",
+            "pipeline": "<DEPLOY_PRODUCTION_ID>",
             "refId": "7",
             "requisiteStageRefIds": [
                 "6"
@@ -116,5 +116,5 @@
         }
     ],
     "triggers": [],
-    "updateTs": "1558527470000"
+    "updateTs": "1558005007000"
 }
