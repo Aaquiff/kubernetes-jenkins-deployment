@@ -1,6 +1,6 @@
 {
     "application": "<APPLICATION>",
-    "name": "Deploy Staging",
+    "name": "Deploy Dev",
     "expectedArtifacts": [
         {
             "defaultArtifact": {
@@ -24,11 +24,11 @@
                 "customKind": true,
                 "id": "ef99e6d2-5335-4cb9-aa44-3afee04c641a"
             },
-            "displayName": "staging-chart",
+            "displayName": "dev-chart",
             "id": "5fb1c65d-625c-4c17-9e60-9cbf688edad7",
             "matchArtifact": {
                 "id": "7873fd97-34b8-4d3f-aa20-6e9dac6c13dc",
-                "name": "staging-chart",
+                "name": "dev-chart",
                 "type": "embedded/base64"
             },
             "useDefaultArtifact": false,
@@ -62,7 +62,7 @@
             "moniker": {
                 "app": "<APPLICATION>"
             },
-            "name": "Deploy (Manifest) Staging",
+            "name": "Deploy (Manifest) Dev",
             "refId": "2",
             "relationships": {
                 "loadBalancers": [],

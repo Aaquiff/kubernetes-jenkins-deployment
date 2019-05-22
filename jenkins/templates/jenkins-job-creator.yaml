@@ -41,6 +41,7 @@ data:
     cd /jenkins
     {{- range .Values.applications }}
     curl -s -XPOST "$JENKINS/createItem?name={{ .name }}" --data-binary @{{ .name }}.xml -H "Content-Type:text/xml" --user $USERNAME:$PASSWORD
+    curl -s -XPOST "$JENKINS/createItem?name={{ .name }}-image" --data-binary @{{ .name }}-image.xml -H "Content-Type:text/xml" --user $USERNAME:$PASSWORD
     {{- end }}
   {{- range .Values.applications }}
   {{ .name }}.xml: |-
@@ -89,4 +90,54 @@ data:
         </definition>
         <disabled>false</disabled>
     </flow-definition>
-    {{- end }}
+  {{ .name }}-image.xml: |-
+    <?xml version="1.0" encoding="UTF-8"?>
+    <project>
+      <actions />
+      <description />
+      <keepDependencies>false</keepDependencies>
+      <properties />
+      <scm class="hudson.plugins.git.GitSCM" plugin="git@3.9.3">
+          <configVersion>2</configVersion>
+          <userRemoteConfigs>
+            <hudson.plugins.git.UserRemoteConfig>
+                <url>{{ .repoUrl }}</url>
+            </hudson.plugins.git.UserRemoteConfig>
+          </userRemoteConfigs>
+          <branches>
+            <hudson.plugins.git.BranchSpec>
+                <name>*/master</name>
+            </hudson.plugins.git.BranchSpec>
+          </branches>
+          <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+          <submoduleCfg class="list" />
+          <extensions />
+      </scm>
+      <canRoam>true</canRoam>
+      <disabled>false</disabled>
+      <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+      <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+      <triggers>
+          <hudson.triggers.TimerTrigger>
+            <spec>0 0 * * *</spec>
+          </hudson.triggers.TimerTrigger>
+      </triggers>
+      <concurrentBuild>false</concurrentBuild>
+      <builders>
+          <hudson.tasks.Shell>
+            <command>timestamp() {
+      date +"%Y%m%d%H%M%S"
+    }
+
+    IMAGE_NAME={{ .image.username }}/{{ .image.repository }}:`timestamp`
+    docker login docker.wso2.com -u $WSO2_USERNAME -p $WSO2_PASSWORD
+    cd docker
+    docker build -t $IMAGE_NAME .
+    docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD
+    docker push $IMAGE_NAME</command>
+          </hudson.tasks.Shell>
+      </builders>
+      <publishers />
+      <buildWrappers />
+    </project>
+  {{- end }}

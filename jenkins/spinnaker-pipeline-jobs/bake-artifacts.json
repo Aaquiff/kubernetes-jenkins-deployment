@@ -1,6 +1,6 @@
 {
     "application": "<APPLICATION>",
-    "name": "Bake Artifacts",
+    "name": "Bake Manifests",
     "expectedArtifacts": [
         {
             "defaultArtifact": {
@@ -22,11 +22,11 @@
                 "customKind": true,
                 "id": "1db24043-0cd0-4511-b645-e4fa7f52a689"
             },
-            "displayName": "values-staging.yaml",
+            "displayName": "values-dev.yaml",
             "id": "aec2c4f1-2cb2-4d50-962a-dedc2a7457e0",
             "matchArtifact": {
                 "id": "d98b429d-0a8e-4c3e-87d1-d57974f0c6ae",
-                "name": "values-staging.yaml",
+                "name": "values-dev.yaml",
                 "type": "embedded/base64"
             },
             "useDefaultArtifact": false,
@@ -74,11 +74,11 @@
             "expectedArtifacts": [
                 {
                     "defaultArtifact": {},
-                    "displayName": "staging-chart",
+                    "displayName": "dev-chart",
                     "id": "226a10b2-fa11-4ac0-813e-a4556d574721",
                     "matchArtifact": {
                         "kind": "base64",
-                        "name": "staging-chart",
+                        "name": "dev-chart",
                         "type": "embedded/base64"
                     },
                     "useDefaultArtifact": false
@@ -94,9 +94,9 @@
                     "id": "aec2c4f1-2cb2-4d50-962a-dedc2a7457e0"
                 }
             ],
-            "name": "Bake (Manifest) Staging",
-            "namespace": "staging",
-            "outputName": "staging",
+            "name": "Bake (Manifest) dev",
+            "namespace": "<APPLICATION>-dev",
+            "outputName": "dev",
             "overrides": {
                 "imageCredentials.password": "<IMAGE_PASSWORD>",
                 "imageCredentials.registry": "<IMAGE_REGISTRY>",
@@ -133,7 +133,7 @@
                 }
             ],
             "name": "Bake (Manifest) Prod",
-            "namespace": "prod",
+            "namespace": "<APPLICATION>-prod",
             "outputName": "prod",
             "overrides": {
                 "imageCredentials.password": "<IMAGE_PASSWORD>",
@@ -149,7 +149,7 @@
             "application": "<APPLICATION>",
             "failPipeline": true,
             "name": "Pipeline",
-            "pipeline": "<DEPLOY_STAGING_ID>",
+            "pipeline": "<DEPLOY_DEV_ID>",
             "refId": "7",
             "requisiteStageRefIds": [
                 "1",
