@@ -45,7 +45,7 @@
                 "type": "embedded/base64"
             },
             "useDefaultArtifact": false,
-            "usePriorArtifact": false
+            "usePriorArtifact": true
         },
         {
             "defaultArtifact": {
