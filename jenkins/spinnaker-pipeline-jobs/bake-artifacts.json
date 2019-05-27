@@ -11,7 +11,7 @@
             "id": "4397cbfc-50f8-4244-b721-2a35d8e04715",
             "matchArtifact": {
                 "id": "7f76f43f-37fd-4410-81f2-c1acd4cf8422",
-                "name": ".*\\.tgz",
+                "name": "<CHART_NAME>-.*\\.tgz",
                 "type": "embedded/base64"
             },
             "useDefaultArtifact": false,
