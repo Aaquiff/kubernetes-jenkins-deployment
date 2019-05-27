@@ -71,11 +71,11 @@ data:
   {{- $stagingpipeline := printf "%s-%s" .name "deploy-staging.json" }}
   {{- $productionpipeline := printf "%s-%s" .name "deploy-production.json" }}
   
-  {{ ($files.Glob "spinnaker-pipeline-jobs/bake-artifacts.json").AsConfig | replace "<DOCKER_IMAGE>" $imageName | replace "<IMAGE_REGISTRY>" .image.registry | replace "<IMAGE_USERNAME>" .image.username | replace "<IMAGE_PASSWORD>" .image.password | replace "<IMAGE_ORGANIZATION>" .image.organization | replace "<IMAGE_REPOSITORY>" .image.repository | replace "<APPLICATION>" .name | replace "bake-artifacts.json" $bakepipeline | nindent 2 }}
+  {{ ($files.Glob "spinnaker-pipeline-jobs/bake-artifacts.json").AsConfig | replace "<DOCKER_IMAGE>" $imageName | replace "<IMAGE_REGISTRY>" .image.registry | replace "<IMAGE_USERNAME>" .image.username | replace "<IMAGE_PASSWORD>" .image.password | replace "<IMAGE_ORGANIZATION>" .image.organization | replace "<IMAGE_REPOSITORY>" .image.repository | replace "<APPLICATION>" .name | replace "<CHART_NAME>" .chart.name | replace "bake-artifacts.json" $bakepipeline | nindent 2 }}
 
-  {{ ($files.Glob "spinnaker-pipeline-jobs/deploy-staging.json").AsConfig | replace "<DOCKER_IMAGE>" $imageName | replace "<REPO_URL>" .repoUrl | replace "<TESTSCRIPT_COMMAND>" .testScript.command | replace "<TESTSCRIPT_PATH>" .testScript.path | replace "<APPLICATION>" .name | replace "deploy-staging.json" $stagingpipeline | nindent 2 }}
+  {{ ($files.Glob "spinnaker-pipeline-jobs/deploy-staging.json").AsConfig | replace "<DOCKER_IMAGE>" $imageName | replace "<REPO_URL>" .chart.repo | replace "<TESTSCRIPT_COMMAND>" .testScript.command | replace "<TESTSCRIPT_PATH>" .testScript.path | replace "<APPLICATION>" .name | replace "deploy-staging.json" $stagingpipeline | nindent 2 }}
   
-  {{ ($files.Glob "spinnaker-pipeline-jobs/deploy-dev.json").AsConfig | replace "<DOCKER_IMAGE>" $imageName | replace "<REPO_URL>" .repoUrl | replace "<TESTSCRIPT_COMMAND>" .testScript.command | replace "<TESTSCRIPT_PATH>" .testScript.path | replace "<APPLICATION>" .name | replace "deploy-dev.json" $devpipeline | nindent 2 }}
+  {{ ($files.Glob "spinnaker-pipeline-jobs/deploy-dev.json").AsConfig | replace "<DOCKER_IMAGE>" $imageName | replace "<TESTSCRIPT_COMMAND>" .testScript.command | replace "<TESTSCRIPT_PATH>" .testScript.path | replace "<APPLICATION>" .name | replace "deploy-dev.json" $devpipeline | nindent 2 }}
 
   {{ ($files.Glob "spinnaker-pipeline-jobs/deploy-production.json").AsConfig | replace "<DOCKER_IMAGE>" $imageName | replace "<APPLICATION>" .name | replace "deploy-production.json" $productionpipeline | nindent 2 }}
 
