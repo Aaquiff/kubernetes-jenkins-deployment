@@ -299,18 +299,21 @@ data:
               "payloadConstraints": {},
               "source": "chart",
               "type": "webhook"
-          },
-          {
+          }
+          {{- range $index, $image := .images }}
+            {{- $imageName := printf "%s/%s/%s" $application.registryCredentials.registry $image.organization $image.repository }}
+          ,{
               "account": "dockerhub",
               "enabled": true,
               "expectedArtifactIds": [
-                  "ac0f7833-c764-40fc-a37a-f6a546b72db3"
+                  "{{- $index }}"
               ],
-              "organization": "{{ .image.organization }}",
-              "registry": "{{ .registryCredentials.registry }}",
-              "repository": "{{ .image.organization }}/{{ .image.repository }}",
+              "organization": "{{ $image.organization }}",
+              "registry": "{{ $application.registryCredentials.registry }}",
+              "repository": "{{ $image.organization }}/{{ $image.repository }}",
               "type": "docker"
           }
+          {{- end }}
       ],
       "updateTs": "1558523410000"
     }

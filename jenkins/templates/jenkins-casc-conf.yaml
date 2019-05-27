@@ -39,8 +39,10 @@ data:
     jobs:
       {{- $namespace := .Release.Namespace -}}
       {{- range .Values.applications }}
+      {{- $application := . -}}
+      {{- range $index, $image := .images }}
       - script: >
-          job("{{ .name }}-image") {
+          job("{{ $application.name }}-{{ $image.repository }}-image") {
             description()
             logRotator(10)
             keepDependencies(false)
@@ -50,7 +52,7 @@ data:
                 git {
                     remote {
                         name('docker-repo')
-                        url('{{ .dockerRepo }}')
+                        url('{{ $image.gitRepo }}')
                     }
                 }
             }
@@ -63,7 +65,7 @@ data:
                   date +\"%Y%m%d%H%M%S\"
                 }
 
-                IMAGE_NAME={{ .image.organization }}/{{ .image.repository }}:`timestamp`
+                IMAGE_NAME={{ $image.organization }}/{{ $image.repository }}:`timestamp`
                 docker login docker.wso2.com -u \$WSO2_USERNAME -p \$WSO2_PASSWORD
                 docker build -t \$IMAGE_NAME .
                 docker login -u \$REGISTRY_USERNAME -p \$REGISTRY_PASSWORD
@@ -71,7 +73,7 @@ data:
             }
           }
       - script: >
-          job("{{ .name }}-artifacts") {
+          job("{{ $application.name }}-{{ $image.repository }}-artifacts") {
             description()
             logRotator(10)
             keepDependencies(false)
@@ -81,7 +83,7 @@ data:
                 git {
                     remote {
                         name('docker-repo')
-                        url('{{ .dockerRepo }}')
+                        url('{{ $image.gitRepo }}')
                     }
                 }
             }
@@ -90,13 +92,14 @@ data:
             }
             steps {
               shell("""
-                TAG=`docker images {{ .image.organization }}/{{ .image.repository }} --format '{{ "{{ .Tag }}" }}' | sort -nrk1 | head -1`
-                sed -i "s|{{ .image.wso2Image }}|{{ .image.organization }}/{{ .image.repository }}:\$TAG|" Dockerfile
-                docker build -t {{ .image.organization }}/{{ .image.repository }}:\$TAG .
+                TAG=`docker images {{ $image.organization }}/{{ $image.repository }} --format '{{ "{{ .Tag }}" }}' | sort -nrk1 | head -1`
+                sed -i "s|{{ $image.wso2Image }}|{{ $image.organization }}/{{ $image.repository }}:\$TAG|" Dockerfile
+                docker build -t {{ $image.organization }}/{{ $image.repository }}:\$TAG .
                 docker login -u \$REGISTRY_USERNAME -p \$REGISTRY_PASSWORD
-                docker push {{ .image.organization }}/{{ .image.repository }}:\$TAG""")
+                docker push {{ $image.organization }}/{{ $image.repository }}:\$TAG""")
             }
           }
+      {{- end }}
       - script: >
           job("{{ .name }}-chart") {
             description()
