@@ -1,23 +1,21 @@
 namespace: jenkins
-image: aaquiff/jenkins-docker-kube:latest
+image: 'aaquiff/jenkins-docker-kube:latest'
 confs: confs
 cascConfigs: confs/casc_configs
 wso2Username: <WSO2_USERNAME>
 wso2Password: <WSO2_PASSWORD>
-
 jenkins:
   username: <JENKINS_USERNAME>
   password: <JENKINS_PASSWORD>
-
 registry:
-    server: https://index.docker.io/v1/
-    username: <REGISTRY_USERNAME>
-    password: <REGISTRY_PASSWORD>
-    email: <REGISTRY_EMAIL>
-    address: index.docker.io
+  server: 'https://index.docker.io/v1/'
+  username: <REGISTRY_USERNAME>
+  password: <REGISTRY_PASSWORD>
+  email: <REGISTRY_EMAIL>
+  address: index.docker.io
 
 spinnaker:
-    dockerRegistries:
+  dockerRegistries:
     - name: dockerhub
       address: index.docker.io
       username: <REGISTRY_USERNAME>
@@ -26,69 +24,58 @@ spinnaker:
       repositories:
         - aaquiff/wso2ei-6.4.0
         - aaquiff/wso2ei-integrator
-    halyard:
-      spinnakerVersion: 1.13.6
-      image:
-        tag: 1.19.2
-      additionalScripts:
-        create: true
-        data: 
-          enable_ci.sh: |-
-            echo Configuring jenkins master
-            PASSWORD=<JENKINS_PASSWORD>
-            config ci jenkins enable
-            echo $PASSWORD |  config ci jenkins master edit master --address http://jenkins-service.jenkins.svc.cluster.local:8080 --username aaquiff --password || echo $PASSWORD | config ci jenkins master add master --address http://jenkins-service.jenkins.svc.cluster.local:8080 --username aaquiff --password
-            config features edit --pipeline-templates true
-    # kubeConfig:
-    #   enabled: true
-    #   secretName: kube-conf
-    #   secretKey: config
-    #   contexts:
-    #   - staging
-    #   deploymentContext: default
-    #   omiitedNameSpaces:
-    #   - kube-system
-    #   - kube-public
-    ingress:
-      enabled: true
-      host: spinnaker
-      annotations:
-        ingress.kubernetes.io/ssl-redirect: 'true'
-        kubernetes.io/ingress.class: nginx
-        kubernetes.io/tls-acme: true
-      tls:
-       - secretName: -tls
-         hosts:
-           - domain.com
-
-    ingressGate:
-      enabled: true
-      host: gate.spinnaker
-      annotations:
-        ingress.kubernetes.io/ssl-redirect: 'true'
-        kubernetes.io/ingress.class: nginx
-        kubernetes.io/tls-acme: true
-      tls:
-       - secretName: -tls
-         hosts:
-           - domain.com
+  halyard:
+    spinnakerVersion: 1.13.6
+    image:
+      tag: 1.19.2
+    additionalScripts:
+      create: true
+      data:
+        enable_ci.sh: |-
+          echo "Configuring jenkins master"
+          PASSWORD="aaquiff"
+          $HAL_COMMAND config ci jenkins enable
+          echo $PASSWORD | $HAL_COMMAND config ci jenkins master edit master --address http://jenkins-service.jenkins.svc.cluster.local:8080 --username aaquiff --password aaquiff || echo $PASSWORD | $HAL_COMMAND config ci jenkins master add master --address http://jenkins-service.jenkins.svc.cluster.local:8080 --username aaquiff --password
+          $HAL_COMMAND config features edit --pipeline-templates true
+  ingress:
+    enabled: true
+    host: spinnaker
+    annotations:
+      ingress.kubernetes.io/ssl-redirect: 'true'
+      kubernetes.io/ingress.class: nginx
+      kubernetes.io/tls-acme: "true"
+    tls:
+      - secretName: '-tls'
+        hosts:
+          - domain.com
+  ingressGate:
+    enabled: true
+    host: gate.spinnaker
+    annotations:
+      ingress.kubernetes.io/ssl-redirect: 'true'
+      kubernetes.io/ingress.class: nginx
+      kubernetes.io/tls-acme: "true"
+    tls:
+     - secretName: -tls
+       hosts:
+         - domain.com
 
 applications:
   - name: wso2ei
-    dockerRepo: https://github.com/Aaquiff/docker-ei
+    dockerRepo: 'https://github.com/Aaquiff/docker-ei'
     email: <WSO2_USERNAME>
     testScript:
       path: tests
       command: test.sh
     chart:
       name: scalable-integrator
-      repo: https://github.com/Aaquiff/ei-cd
+      repo: 'https://github.com/Aaquiff/ei-cd'
     registryCredentials:
       registry: index.docker.io
       username: <REGISTRY_USERNAME>
       password: <REGISTRY_PASSWORD>
     images:
-      - wso2Image: docker.wso2.com/wso2ei-integrator:6.4.0
+      - wso2Image: 'docker.wso2.com/wso2ei-integrator:6.4.0'
         organization: aaquiff
         repository: wso2ei-6.4.0
-        gitRepo: https://github.com/Aaquiff/docker-ei
+        gitRepo: 'https://github.com/Aaquiff/docker-ei'
