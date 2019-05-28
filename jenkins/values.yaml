@@ -33,9 +33,10 @@ spinnaker:
       data:
         enable_ci.sh: |-
           echo "Configuring jenkins master"
-          PASSWORD="aaquiff"
+          USERNAME="<JENKINS_USERNAME>"
+          PASSWORD="<JENKINS_PASSWORD>"
           $HAL_COMMAND config ci jenkins enable
-          echo $PASSWORD | $HAL_COMMAND config ci jenkins master edit master --address http://jenkins-service.jenkins.svc.cluster.local:8080 --username aaquiff --password aaquiff || echo $PASSWORD | $HAL_COMMAND config ci jenkins master add master --address http://jenkins-service.jenkins.svc.cluster.local:8080 --username aaquiff --password
+          echo $PASSWORD | $HAL_COMMAND config ci jenkins master edit master --address http://jenkins-service.jenkins.svc.cluster.local:8080 --username $USERNAME --password $PASSWORD || echo $PASSWORD | $HAL_COMMAND config ci jenkins master add master --address http://jenkins-service.jenkins.svc.cluster.local:8080 --username $USERNAME --password $PASSWORD
           $HAL_COMMAND config features edit --pipeline-templates true
   ingress:
     enabled: true
