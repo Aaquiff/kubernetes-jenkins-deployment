@@ -26,9 +26,9 @@ spinnaker:
         - aaquiff/wso2ei-6.4.0
         - aaquiff/wso2ei-integrator
   halyard:
-    spinnakerVersion: 1.13.6
+    spinnakerVersion: 1.13.8
     image:
-      tag: 1.19.2
+      tag: 1.20.2
     additionalScripts:
       create: true
       data:
