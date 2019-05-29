@@ -1,12 +1,13 @@
 namespace: jenkins
 image: 'aaquiff/jenkins-docker-kube:latest'
-confs: confs
-cascConfigs: confs/casc_configs
 wso2Username: <WSO2_USERNAME>
 wso2Password: <WSO2_PASSWORD>
+
+# Admin credentials of jenkins instance to be created
 jenkins:
   username: <JENKINS_USERNAME>
   password: <JENKINS_PASSWORD>
+
 registry:
   server: 'https://index.docker.io/v1/'
   username: <REGISTRY_USERNAME>
