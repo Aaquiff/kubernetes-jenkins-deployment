@@ -15,6 +15,23 @@ registry:
   email: <REGISTRY_EMAIL>
   address: index.docker.io
 
+applications:
+  - name: wso2ei
+    dockerRepo: 'https://github.com/Aaquiff/docker-ei'
+    email: <WSO2_USERNAME>
+    testScript:
+      path: tests
+      command: test.sh
+    chart:
+      name: scalable-integrator
+      repo: 'https://github.com/Aaquiff/ei-cd'
+    images:
+      - wso2Image: 'docker.wso2.com/wso2ei-integrator:6.4.0'
+        organization: aaquiff
+        repository: wso2ei-6.4.0
+        gitRepo: 'https://github.com/Aaquiff/docker-ei'
+
+# Values for Spinnaker chart
 spinnaker:
   dockerRegistries:
     - name: dockerhub
@@ -62,22 +79,3 @@ spinnaker:
        hosts:
          - domain.com
 
-applications:
-  - name: wso2ei
-    dockerRepo: 'https://github.com/Aaquiff/docker-ei'
-    email: <WSO2_USERNAME>
-    testScript:
-      path: tests
-      command: test.sh
-    chart:
-      name: scalable-integrator
-      repo: 'https://github.com/Aaquiff/ei-cd'
-    registryCredentials:
-      registry: index.docker.io
-      username: <REGISTRY_USERNAME>
-      password: <REGISTRY_PASSWORD>
-    images:
-      - wso2Image: 'docker.wso2.com/wso2ei-integrator:6.4.0'
-        organization: aaquiff
-        repository: wso2ei-6.4.0
-        gitRepo: 'https://github.com/Aaquiff/docker-ei'
