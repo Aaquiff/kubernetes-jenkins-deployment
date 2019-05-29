@@ -135,7 +135,7 @@ data:
               "usePriorArtifact": true
           }
         {{- range $index, $image := .images }}
-        {{- $imageName := printf "%s/%s/%s" $application.registryCredentials.registry $image.organization $image.repository }}
+        {{- $imageName := printf "%s/%s/%s" $root.Values.registry.address $image.organization $image.repository }}
           ,{
               "defaultArtifact": {
                   "id": "beebe844-426d-46ee-9a9f-b13eeb251717",
@@ -188,9 +188,9 @@ data:
               "namespace": "{{ .name }}-dev",
               "outputName": "dev",
               "overrides": {
-                  "imageCredentials.password": "{{ .registryCredentials.password }}",
-                  "imageCredentials.registry": "{{ .registryCredentials.registry }}",
-                  "imageCredentials.username": "{{ .registryCredentials.username }}"
+                  "imageCredentials.password": "{{ $root.Values.registry.password }}",
+                  "imageCredentials.registry": "{{ $root.Values.registry.address }}",
+                  "imageCredentials.username": "{{ $root.Values.registry.username }}"
               },
               "refId": "1",
               "requisiteStageRefIds": [],
@@ -226,9 +226,9 @@ data:
               "namespace": "{{ .name }}-prod",
               "outputName": "prod",
               "overrides": {
-                  "imageCredentials.password": "{{ .registryCredentials.password }}",
-                  "imageCredentials.registry": "{{ .registryCredentials.registry }}",
-                  "imageCredentials.username": "{{ .registryCredentials.username }}"
+                  "imageCredentials.password": "{{ $root.Values.registry.password }}",
+                  "imageCredentials.registry": "{{ $root.Values.registry.registry }}",
+                  "imageCredentials.username": "{{ $root.Values.registry.username }}"
               },
               "refId": "3",
               "requisiteStageRefIds": [],
@@ -264,9 +264,9 @@ data:
               "namespace": "{{ .name }}-staging",
               "outputName": "staging",
               "overrides": {
-                  "imageCredentials.password": "{{ .registryCredentials.password }}",
-                  "imageCredentials.registry": "{{ .registryCredentials.registry }}",
-                  "imageCredentials.username": "{{ .registryCredentials.username }}"
+                  "imageCredentials.password": "{{ $root.Values.registry.password }}",
+                  "imageCredentials.registry": "{{ $root.Values.registry.address }}",
+                  "imageCredentials.username": "{{ $root.Values.registry.username }}"
               },
               "refId": "8",
               "requisiteStageRefIds": [],
@@ -301,7 +301,7 @@ data:
               "type": "webhook"
           }
           {{- range $index, $image := .images }}
-            {{- $imageName := printf "%s/%s/%s" $application.registryCredentials.registry $image.organization $image.repository }}
+            {{- $imageName := printf "%s/%s/%s" $root.Values.registry.address $image.organization $image.repository }}
           ,{
               "account": "dockerhub",
               "enabled": true,
@@ -309,7 +309,7 @@ data:
                   "{{- $index }}"
               ],
               "organization": "{{ $image.organization }}",
-              "registry": "{{ $application.registryCredentials.registry }}",
+              "registry": "{{ $root.Values.registry.address }}",
               "repository": "{{ $image.organization }}/{{ $image.repository }}",
               "type": "docker"
           }
@@ -324,7 +324,7 @@ data:
       "name": "Deploy Dev",
       "expectedArtifacts": [
         {{- range $index, $image := .images }}
-        {{- $imageName := printf "%s/%s/%s" $application.registryCredentials.registry $image.organization $image.repository }}
+        {{- $imageName := printf "%s/%s/%s" $root.Values.registry.address $image.organization $image.repository }}
             {
               "defaultArtifact": {
                   "id": "beebe844-426d-46ee-9a9f-b13eeb251717",
@@ -451,7 +451,7 @@ data:
       "name": "Deploy Staging",
       "expectedArtifacts": [
         {{- range $index, $image := .images }}
-        {{- $imageName := printf "%s/%s/%s" $application.registryCredentials.registry $image.organization $image.repository }}
+        {{- $imageName := printf "%s/%s/%s" $root.Values.registry.address $image.organization $image.repository }}
           {
               "defaultArtifact": {
                   "id": "{{- $index }}",
@@ -593,7 +593,7 @@ data:
           "usePriorArtifact": true
         }
         {{- range $index, $image := .images }}
-        {{- $imageName := printf "%s/%s/%s" $application.registryCredentials.registry $image.organization $image.repository }}
+        {{- $imageName := printf "%s/%s/%s" $root.Values.registry.address $image.organization $image.repository }}
         ,{
           "defaultArtifact": {
             "customKind": true,
