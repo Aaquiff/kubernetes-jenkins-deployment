@@ -413,7 +413,7 @@ data:
                 {{- end }}
               ],
               "requisiteStageRefIds": [],
-              "skipExpressionEvaluation": false,
+              "skipExpressionEvaluation": true,
               "source": "artifact",
               "type": "deployManifest"
           },
@@ -525,7 +525,7 @@ data:
                 {{- end }}
               ],
               "requisiteStageRefIds": [],
-              "skipExpressionEvaluation": false,
+              "skipExpressionEvaluation": true,
               "source": "artifact",
               "type": "deployManifest"
           },
@@ -635,7 +635,7 @@ data:
             {{- end }}
           ],
           "requisiteStageRefIds": [],
-          "skipExpressionEvaluation": false,
+          "skipExpressionEvaluation": true,
           "source": "artifact",
           "type": "deployManifest"
         }
