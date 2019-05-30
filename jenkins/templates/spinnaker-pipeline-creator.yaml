@@ -67,8 +67,6 @@ data:
       "user": "[anonymous]"
     }
 
-    {{- $imageName := printf "test" }}
-
   {{ .name }}-bake-artifacts.json: |-
     {
       "application": "{{ .name }}",
