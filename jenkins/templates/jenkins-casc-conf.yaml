@@ -125,19 +125,20 @@ data:
               shell(
               """
               cat {{ .chart.name }}/values-dev.yaml | base64 >test
-              vd=`tr -d '\\n' < test`
+              VALUES_DEV_CONTENT=`tr -d '\\n' < test`
 
               cat {{ .chart.name }}/values-staging.yaml | base64 >test
-              vs=`tr -d '\\n' < test`
+              VALUES_STAGING_CONTENT=`tr -d '\\n' < test`
 
               cat {{ .chart.name }}/values-prod.yaml | base64 >test
-              vp=`tr -d '\\n' < test`
+              VALUES_PROD_CONTENT=`tr -d '\\n' < test`
 
-              chartname=`helm package {{ .chart.name }} | sed 's|Successfully packaged chart and saved it to: ||' | cut -d '/' -f 6`
-              cat \$chartname | base64 > test
-              message=`tr -d '\\n' < test`
+              CHART_PATH=`helm package {{ .chart.name }} | sed 's|Successfully packaged chart and saved it to: ||'`
+              CHART_NAME=`basename $CHART_PATH`
+              cat \$CHART_NAME | base64 > test
+              CHART_CONTENT=`tr -d '\\n' < test`
 
-              curl -X POST --header "Content-Type: application/json" --request POST --data '{"artifacts": [ {"type": "embedded/base64","name": "'"\$chartname"'", "reference": "'"\$message"'" }, {"type": "embedded/base64","name": "values-dev.yaml","reference": "'"\$vd"'" }, {"type": "embedded/base64","name": "values-prod.yaml","reference": "'"\$vp"'" }, {"type": "embedded/base64","name": "values-staging.yaml","reference": "'"\$vs"'" } ]}' http://spin-gate.{{ $namespace }}.svc.cluster.local:8084/webhooks/webhook/chart
+              curl -X POST --header "Content-Type: application/json" --request POST --data '{"artifacts": [ {"type": "embedded/base64","name": "'"\$CHART_NAME"'", "reference": "'"\$CHART_CONTENT"'" }, {"type": "embedded/base64","name": "values-dev.yaml","reference": "'"\$VALUES_DEV_CONTENT"'" }, {"type": "embedded/base64","name": "values-prod.yaml","reference": "'"\$VALUES_PROD_CONTENT"'" }, {"type": "embedded/base64","name": "values-staging.yaml","reference": "'"\$VALUES_STAGING_CONTENT"'" } ]}' http://spin-gate.{{ $namespace }}.svc.cluster.local:8084/webhooks/webhook/chart
               """)
 
             }
