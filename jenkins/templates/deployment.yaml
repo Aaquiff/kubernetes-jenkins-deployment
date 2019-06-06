@@ -57,6 +57,13 @@ spec:
           value: "/var/casc_configs"
         imagePullPolicy: Always
         readinessProbe:
+          periodSeconds: 10
+          httpGet:
+            path: "/login"
+            port: 8080
+        livenessProbe:
+          periodSeconds: 10
+          initialDelaySeconds: 30
           httpGet:
             path: "/login"
             port: 8080
