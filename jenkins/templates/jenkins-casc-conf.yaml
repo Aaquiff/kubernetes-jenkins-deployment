@@ -134,7 +134,7 @@ data:
               VALUES_PROD_CONTENT=`tr -d '\\n' < test`
 
               CHART_PATH=`helm package {{ .chart.name }} | sed 's|Successfully packaged chart and saved it to: ||'`
-              CHART_NAME=`basename $CHART_PATH`
+              CHART_NAME=`basename \$CHART_PATH`
               cat \$CHART_NAME | base64 > test
               CHART_CONTENT=`tr -d '\\n' < test`
 
