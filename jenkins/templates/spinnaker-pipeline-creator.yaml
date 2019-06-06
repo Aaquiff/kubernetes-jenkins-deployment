@@ -186,9 +186,9 @@ data:
               "namespace": "{{ .name }}-dev",
               "outputName": "dev",
               "overrides": {
-                  "imageCredentials.password": "{{ $root.Values.registry.password }}",
-                  "imageCredentials.registry": "{{ $root.Values.registry.address }}",
-                  "imageCredentials.username": "{{ $root.Values.registry.username }}"
+                  "password": "{{ $root.Values.registry.password }}",
+                  "registry": "{{ $root.Values.registry.address }}",
+                  "username": "{{ $root.Values.registry.username }}"
               },
               "refId": "1",
               "requisiteStageRefIds": [],
@@ -224,9 +224,9 @@ data:
               "namespace": "{{ .name }}-prod",
               "outputName": "prod",
               "overrides": {
-                  "imageCredentials.password": "{{ $root.Values.registry.password }}",
-                  "imageCredentials.registry": "{{ $root.Values.registry.registry }}",
-                  "imageCredentials.username": "{{ $root.Values.registry.username }}"
+                  "password": "{{ $root.Values.registry.password }}",
+                  "registry": "{{ $root.Values.registry.registry }}",
+                  "username": "{{ $root.Values.registry.username }}"
               },
               "refId": "3",
               "requisiteStageRefIds": [],
@@ -262,9 +262,9 @@ data:
               "namespace": "{{ .name }}-staging",
               "outputName": "staging",
               "overrides": {
-                  "imageCredentials.password": "{{ $root.Values.registry.password }}",
-                  "imageCredentials.registry": "{{ $root.Values.registry.address }}",
-                  "imageCredentials.username": "{{ $root.Values.registry.username }}"
+                  "password": "{{ $root.Values.registry.password }}",
+                  "registry": "{{ $root.Values.registry.address }}",
+                  "username": "{{ $root.Values.registry.username }}"
               },
               "refId": "8",
               "requisiteStageRefIds": [],
