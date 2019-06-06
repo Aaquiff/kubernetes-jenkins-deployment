@@ -38,12 +38,14 @@ data:
               password: "{{ .Values.jenkins.password }}"
       authorizationStrategy: loggedInUsersCanDoAnything
     jobs:
-      {{- $namespace := .Release.Namespace -}}
+      {{- $namespace := .Release.Namespace }}
       {{- range .Values.applications }}
-      {{- $application := . -}}
+      {{- $application := . }}
+      - script: >
+          folder("{{ $application.name }}")
       {{- range $index, $image := .images }}
       - script: >
-          job("{{ $application.name }}-{{ $image.repository }}-image") {
+          job("{{ $application.name }}/{{ $image.repository }}-image") {
             description()
             logRotator(10)
             keepDependencies(false)
@@ -74,7 +76,7 @@ data:
             }
           }
       - script: >
-          job("{{ $application.name }}-{{ $image.repository }}-artifacts") {
+          job("{{ $application.name }}/{{ $image.repository }}-artifacts") {
             description()
             logRotator(10)
             keepDependencies(false)
@@ -102,7 +104,7 @@ data:
           }
       {{- end }}
       - script: >
-          job("{{ .name }}-chart") {
+          job("{{ .name }}/chart") {
             description()
             logRotator(10)
             keepDependencies(false)
