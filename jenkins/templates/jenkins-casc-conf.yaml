@@ -29,6 +29,7 @@ data:
                   git:
                     remote: "https://github.com/Aaquiff/jenkins-shared-lib"
     jenkins:
+      systemMessage: "WSO2 CI/CD Setup"
       securityRealm:
         local:
           allowsSignup: false
