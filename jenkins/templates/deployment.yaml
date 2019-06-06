@@ -57,14 +57,9 @@ spec:
           value: "/var/casc_configs"
         imagePullPolicy: Always
         readinessProbe:
-          periodSeconds: 10
-          exec:
-            command:
-            - /bin/bash
-            - -c
-            - wum version
-            - docker version
-            - helm repo list
+          httpGet:
+            path: "/login"
+            port: 8080
         securityContext:
           runAsUser: 0
         volumeMounts:
