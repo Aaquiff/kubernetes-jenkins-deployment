@@ -17,7 +17,6 @@ registry:
 
 applications:
   - name: wso2ei
-    dockerRepo: 'https://github.com/Aaquiff/docker-ei'
     email: <WSO2_USERNAME>
     testScript:
       path: tests
