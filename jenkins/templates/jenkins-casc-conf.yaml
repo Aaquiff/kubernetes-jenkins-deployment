@@ -29,6 +29,7 @@ data:
                   git:
                     remote: "https://github.com/Aaquiff/jenkins-shared-lib"
     jenkins:
+      systemMessage: "WSO2 CI/CD Setup"
       securityRealm:
         local:
           allowsSignup: false
@@ -36,3 +37,109 @@ data:
             - id: "{{ .Values.jenkins.username }}"
               password: "{{ .Values.jenkins.password }}"
       authorizationStrategy: loggedInUsersCanDoAnything
+    jobs:
+      {{- $namespace := .Release.Namespace }}
+      {{- range .Values.applications }}
+      {{- $application := . }}
+      - script: >
+          folder("{{ $application.name }}")
+      {{- range $index, $image := .images }}
+      - script: >
+          job("{{ $application.name }}/{{ $image.repository }}-image") {
+            description()
+            logRotator(10)
+            keepDependencies(false)
+            disabled(false)
+            concurrentBuild(true)
+            scm {
+                git {
+                    remote {
+                        name('docker-repo')
+                        url('{{ $image.gitRepo }}')
+                    }
+                }
+            }
+            triggers {
+              cron('@daily')
+            }
+            steps {
+              shell("""
+                timestamp() {
+                  date +\"%Y%m%d%H%M%S\"
+                }
+
+                IMAGE_NAME={{ $image.organization }}/{{ $image.repository }}:`timestamp`
+                docker login docker.wso2.com -u \$WSO2_USERNAME -p \$WSO2_PASSWORD
+                docker build -t \$IMAGE_NAME .
+                docker login -u \$REGISTRY_USERNAME -p \$REGISTRY_PASSWORD
+                docker push \$IMAGE_NAME""")
+            }
+          }
+      - script: >
+          job("{{ $application.name }}/{{ $image.repository }}-artifacts") {
+            description()
+            logRotator(10)
+            keepDependencies(false)
+            disabled(false)
+            concurrentBuild(true)
+            scm {
+                git {
+                    remote {
+                        name('docker-repo')
+                        url('{{ $image.gitRepo }}')
+                    }
+                }
+            }
+            triggers {
+                scm('* * * * *')
+            }
+            steps {
+              shell("""
+                TAG=`docker images {{ $image.organization }}/{{ $image.repository }} --format '{{ "{{ .Tag }}" }}' | sort -nrk1 | head -1`
+                sed -i "s|{{ $image.wso2Image }}|{{ $image.organization }}/{{ $image.repository }}:\$TAG|" Dockerfile
+                docker build -t {{ $image.organization }}/{{ $image.repository }}:\$TAG .
+                docker login -u \$REGISTRY_USERNAME -p \$REGISTRY_PASSWORD
+                docker push {{ $image.organization }}/{{ $image.repository }}:\$TAG""")
+            }
+          }
+      {{- end }}
+      - script: >
+          job("{{ .name }}/chart") {
+            description()
+            logRotator(10)
+            keepDependencies(false)
+            disabled(false)
+            concurrentBuild(true)
+            scm {
+                git {
+                    remote {
+                        name('chart-repo')
+                        url('{{ .chart.repo }}')
+                    }
+                }
+            }
+            triggers {
+                scm('* * * * *')
+            }
+            steps {
+              shell(
+              """
+              cat {{ .chart.name }}/values-dev.yaml | base64 >test
+              vd=`tr -d '\\n' < test`
+
+              cat {{ .chart.name }}/values-staging.yaml | base64 >test
+              vs=`tr -d '\\n' < test`
+
+              cat {{ .chart.name }}/values-prod.yaml | base64 >test
+              vp=`tr -d '\\n' < test`
+
+              chartname=`helm package {{ .chart.name }} | sed 's|Successfully packaged chart and saved it to: ||' | cut -d '/' -f 6`
+              cat \$chartname | base64 > test
+              message=`tr -d '\\n' < test`
+
+              curl -X POST --header "Content-Type: application/json" --request POST --data '{"artifacts": [ {"type": "embedded/base64","name": "'"\$chartname"'", "reference": "'"\$message"'" }, {"type": "embedded/base64","name": "values-dev.yaml","reference": "'"\$vd"'" }, {"type": "embedded/base64","name": "values-prod.yaml","reference": "'"\$vp"'" }, {"type": "embedded/base64","name": "values-staging.yaml","reference": "'"\$vs"'" } ]}' http://spin-gate.{{ $namespace }}.svc.cluster.local:8084/webhooks/webhook/chart
+              """)
+
+            }
+          }
+      {{- end }}
