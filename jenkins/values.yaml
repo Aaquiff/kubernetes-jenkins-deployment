@@ -1,7 +1,7 @@
 namespace: jenkins
 image: 'aaquiff/jenkins-docker-kube:latest'
-wso2Username: <WSO2_USERNAME>
-wso2Password: <WSO2_PASSWORD>
+wso2Username: <WSO2_SUBSCRIPTION_USERNAME>
+wso2Password: <WSO2_SUBSCRIPTION_PASSWORD>
 
 # Admin credentials of jenkins instance to be created
 jenkins:
