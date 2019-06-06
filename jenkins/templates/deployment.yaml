@@ -63,7 +63,7 @@ spec:
             port: 8080
         livenessProbe:
           periodSeconds: 10
-          initialDelaySeconds: 30
+          initialDelaySeconds: 300
           httpGet:
             path: "/login"
             port: 8080
