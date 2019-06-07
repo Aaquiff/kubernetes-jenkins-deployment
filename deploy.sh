@@ -1,12 +1,32 @@
-# WSO2 CI/CD Setup Provider
+#!/bin/bash
 
-WSO2_USERNAME=$1
-WSO2_PASSWORD=$2
-REGISTRY_USERNAME=$3
-REGISTRY_PASSWORD=$4
-REGISTRY_EMAIL=$5
-JENKINS_USERNAME=$6
-JENKINS_PASSWORD=$7
+# ------------------------------------------------------------------------
+# Copyright 2017 WSO2, Inc. (http://wso2.com)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License
+# ------------------------------------------------------------------------
+
+set -e 
+
+ECHO=`which echo`
+READ=`which read`
+
+# methods
+function echoBold () {
+    ${ECHO} -e $'\e[1m'"${1}"$'\e[0m'
+}
+
+echoBold "WSO2 CI/CD Setup Provider"
 
 mkdir jenkins
 
@@ -89,18 +109,24 @@ spec:
             secretKeyRef:
               name: registry-credentials-pod
               key: password
+        - name: GITHUB_USERNAME
+          value: {{ .Values.github.username}}
+        - name: GITHUB_PASSWORD
+          value: {{ .Values.github.password}}
         - name: CASC_JENKINS_CONFIG
           value: "/var/casc_configs"
         imagePullPolicy: Always
         readinessProbe:
           periodSeconds: 10
-          exec:
-            command:
-            - /bin/bash
-            - -c
-            - wum version
-            - docker version
-            - helm repo list
+          httpGet:
+            path: "/login"
+            port: 8080
+        livenessProbe:
+          periodSeconds: 10
+          initialDelaySeconds: 300
+          httpGet:
+            path: "/login"
+            port: 8080
         securityContext:
           runAsUser: 0
         volumeMounts:
@@ -194,6 +220,15 @@ metadata:
 spec:
   template:
     spec:
+      initContainers:
+      # initContainer that waits for spinnaker gate API to be ready
+      - name: wait-for-spin-gate
+        image: aaquiff/spin
+        command: ["/bin/sh"]
+        args: ["-c", "until spin application list --gate-endpoint $SPINNAKER_API; do echo 'Request to spin-gate failed. Retrying in 5s'; sleep 5; done;"]
+        env:
+        - name: SPINNAKER_API
+          value: "http://spin-gate.{{ .Release.Namespace }}.svc.cluster.local:8084"
       containers:
       - name: spin
         image: aaquiff/spin
@@ -222,7 +257,6 @@ metadata:
 data:
   run.sh: |-
     cd spinnaker
-    until spin application list --gate-endpoint $SPINNAKER_API; do  echo "Retrying in 5s"; sleep 5; done;
     {{- range .Values.applications }}
     spin applications save spintest --file {{ .name }}.json --gate-endpoint $SPINNAKER_API && \
 
@@ -251,8 +285,6 @@ data:
       "trafficGuards": [],
       "user": "[anonymous]"
     }
-
-    {{- $imageName := printf "test" }}
 
   {{ .name }}-bake-artifacts.json: |-
     {
@@ -373,9 +405,9 @@ data:
               "namespace": "{{ .name }}-dev",
               "outputName": "dev",
               "overrides": {
-                  "imageCredentials.password": "{{ $root.Values.registry.password }}",
-                  "imageCredentials.registry": "{{ $root.Values.registry.address }}",
-                  "imageCredentials.username": "{{ $root.Values.registry.username }}"
+                  "password": "{{ $root.Values.registry.password }}",
+                  "registry": "{{ $root.Values.registry.address }}",
+                  "username": "{{ $root.Values.registry.username }}"
               },
               "refId": "1",
               "requisiteStageRefIds": [],
@@ -411,9 +443,9 @@ data:
               "namespace": "{{ .name }}-prod",
               "outputName": "prod",
               "overrides": {
-                  "imageCredentials.password": "{{ $root.Values.registry.password }}",
-                  "imageCredentials.registry": "{{ $root.Values.registry.registry }}",
-                  "imageCredentials.username": "{{ $root.Values.registry.username }}"
+                  "password": "{{ $root.Values.registry.password }}",
+                  "registry": "{{ $root.Values.registry.registry }}",
+                  "username": "{{ $root.Values.registry.username }}"
               },
               "refId": "3",
               "requisiteStageRefIds": [],
@@ -449,9 +481,9 @@ data:
               "namespace": "{{ .name }}-staging",
               "outputName": "staging",
               "overrides": {
-                  "imageCredentials.password": "{{ $root.Values.registry.password }}",
-                  "imageCredentials.registry": "{{ $root.Values.registry.address }}",
-                  "imageCredentials.username": "{{ $root.Values.registry.username }}"
+                  "password": "{{ $root.Values.registry.password }}",
+                  "registry": "{{ $root.Values.registry.address }}",
+                  "username": "{{ $root.Values.registry.username }}"
               },
               "refId": "8",
               "requisiteStageRefIds": [],
@@ -598,7 +630,7 @@ data:
                 {{- end }}
               ],
               "requisiteStageRefIds": [],
-              "skipExpressionEvaluation": false,
+              "skipExpressionEvaluation": true,
               "source": "artifact",
               "type": "deployManifest"
           },
@@ -710,7 +742,7 @@ data:
                 {{- end }}
               ],
               "requisiteStageRefIds": [],
-              "skipExpressionEvaluation": false,
+              "skipExpressionEvaluation": true,
               "source": "artifact",
               "type": "deployManifest"
           },
@@ -820,7 +852,7 @@ data:
             {{- end }}
           ],
           "requisiteStageRefIds": [],
-          "skipExpressionEvaluation": false,
+          "skipExpressionEvaluation": true,
           "source": "artifact",
           "type": "deployManifest"
         }
@@ -876,7 +908,17 @@ data:
                 scm:
                   git:
                     remote: "https://github.com/Aaquiff/jenkins-shared-lib"
+    credentials:
+      system:
+        domainCredentials:
+          - credentials:
+              - usernamePassword:
+                  scope: GLOBAL
+                  id: github_credentials
+                  username: ${GITHUB_USERNAME}
+                  password: ${GITHUB_PASSWORD}
     jenkins:
+      systemMessage: "WSO2 CI/CD Setup"
       securityRealm:
         local:
           allowsSignup: false
@@ -885,12 +927,14 @@ data:
               password: "{{ .Values.jenkins.password }}"
       authorizationStrategy: loggedInUsersCanDoAnything
     jobs:
-      {{- $namespace := .Release.Namespace -}}
+      {{- $namespace := .Release.Namespace }}
       {{- range .Values.applications }}
-      {{- $application := . -}}
+      {{- $application := . }}
+      - script: >
+          folder("{{ $application.name }}")
       {{- range $index, $image := .images }}
       - script: >
-          job("{{ $application.name }}-{{ $image.repository }}-image") {
+          job("{{ $application.name }}/{{ $image.repository }}-image") {
             description()
             logRotator(10)
             keepDependencies(false)
@@ -901,6 +945,7 @@ data:
                     remote {
                         name('docker-repo')
                         url('{{ $image.gitRepo }}')
+                        credentials('github_credentials')
                     }
                 }
             }
@@ -921,7 +966,7 @@ data:
             }
           }
       - script: >
-          job("{{ $application.name }}-{{ $image.repository }}-artifacts") {
+          job("{{ $application.name }}/{{ $image.repository }}-artifacts") {
             description()
             logRotator(10)
             keepDependencies(false)
@@ -932,6 +977,7 @@ data:
                     remote {
                         name('docker-repo')
                         url('{{ $image.gitRepo }}')
+                        credentials('github_credentials')
                     }
                 }
             }
@@ -949,7 +995,7 @@ data:
           }
       {{- end }}
       - script: >
-          job("{{ .name }}-chart") {
+          job("{{ .name }}/chart") {
             description()
             logRotator(10)
             keepDependencies(false)
@@ -960,6 +1006,7 @@ data:
                     remote {
                         name('chart-repo')
                         url('{{ .chart.repo }}')
+                        credentials('github_credentials')
                     }
                 }
             }
@@ -970,19 +1017,20 @@ data:
               shell(
               """
               cat {{ .chart.name }}/values-dev.yaml | base64 >test
-              vd=`tr -d '\\n' < test`
+              VALUES_DEV_CONTENT=`tr -d '\\n' < test`
 
               cat {{ .chart.name }}/values-staging.yaml | base64 >test
-              vs=`tr -d '\\n' < test`
+              VALUES_STAGING_CONTENT=`tr -d '\\n' < test`
 
               cat {{ .chart.name }}/values-prod.yaml | base64 >test
-              vp=`tr -d '\\n' < test`
+              VALUES_PROD_CONTENT=`tr -d '\\n' < test`
 
-              chartname=`helm package {{ .chart.name }} | sed 's|Successfully packaged chart and saved it to: ||' | cut -d '/' -f 6`
-              cat \$chartname | base64 > test
-              message=`tr -d '\\n' < test`
+              CHART_PATH=`helm package {{ .chart.name }} | sed 's|Successfully packaged chart and saved it to: ||'`
+              CHART_NAME=`basename \$CHART_PATH`
+              cat \$CHART_NAME | base64 > test
+              CHART_CONTENT=`tr -d '\\n' < test`
 
-              curl -X POST --header "Content-Type: application/json" --request POST --data '{"artifacts": [ {"type": "embedded/base64","name": "'"\$chartname"'", "reference": "'"\$message"'" }, {"type": "embedded/base64","name": "values-dev.yaml","reference": "'"\$vd"'" }, {"type": "embedded/base64","name": "values-prod.yaml","reference": "'"\$vp"'" }, {"type": "embedded/base64","name": "values-staging.yaml","reference": "'"\$vs"'" } ]}' http://spin-gate.{{ $namespace }}.svc.cluster.local:8084/webhooks/webhook/chart
+              curl -X POST --header "Content-Type: application/json" --request POST --data '{"artifacts": [ {"type": "embedded/base64","name": "'"\$CHART_NAME"'", "reference": "'"\$CHART_CONTENT"'" }, {"type": "embedded/base64","name": "values-dev.yaml","reference": "'"\$VALUES_DEV_CONTENT"'" }, {"type": "embedded/base64","name": "values-prod.yaml","reference": "'"\$VALUES_PROD_CONTENT"'" }, {"type": "embedded/base64","name": "values-staging.yaml","reference": "'"\$VALUES_STAGING_CONTENT"'" } ]}' http://spin-gate.{{ $namespace }}.svc.cluster.local:8084/webhooks/webhook/chart
               """)
 
             }
@@ -995,7 +1043,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: jenkins
-  namespace: jenkins
+  namespace: {{ .Release.Namespace }}
 automountServiceAccountToken: true
 
 ---
@@ -1011,7 +1059,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: jenkins
-  namespace: jenkins
+  namespace: {{ .Release.Namespace }}
 EOF
 
 cat > jenkins/templates/spinnaker-jenkins-job-configurator.yaml << "EOF"
@@ -1364,8 +1412,8 @@ EOF
 cat > jenkins/values.yaml << "EOF"
 namespace: jenkins
 image: 'aaquiff/jenkins-docker-kube:latest'
-wso2Username: <WSO2_USERNAME>
-wso2Password: <WSO2_PASSWORD>
+wso2Username: <WSO2_SUBSCRIPTION_USERNAME>
+wso2Password: <WSO2_SUBSCRIPTION_PASSWORD>
 
 # Admin credentials of jenkins instance to be created
 jenkins:
@@ -1378,6 +1426,10 @@ registry:
   password: <REGISTRY_PASSWORD>
   email: <REGISTRY_EMAIL>
   address: index.docker.io
+
+github:
+  username: <GITHUB_USERNAME>
+  password: <GITHUB_PASSWORD>
 
 applications:
   - name: wso2ei
@@ -1455,23 +1507,102 @@ digest: sha256:ea49ffa93decf53b549e6886529bac7204825a85371584801e6ee28d110973b4
 generated: 2019-05-28T15:29:33.797757+05:30
 EOF
 
-
-cd jenkins
+cat > app.yaml << "EOF"
+applications:
+  - name: APP_NAME
+    email: EMAIL
+    testScript:
+      path: TEST_PATH
+      command: TEST_COMMAND
+    chart:
+      name: CHART_NAME
+      repo: 'CHART_REPO'
+    images:
+      - wso2Image: 'WSO2_IMAGE'
+        organization: ORGANIZATION
+        repository: REPOSITORY
+        gitRepo: 'GIT_REPO'
+EOF
 
 replaceTag() {
-    sed -i '' "s|$1|$2|" values.yaml
+    sed -i '' "s|$1|$2|" jenkins/values.yaml
 }
 
-replaceTag "<WSO2_USERNAME>" "$WSO2_USERNAME"
-replaceTag "<WSO2_PASSWORD>" "$WSO2_PASSWORD"
-replaceTag "<REGISTRY_USERNAME>" "$REGISTRY_USERNAME"
-replaceTag "<REGISTRY_PASSWORD>" "$REGISTRY_PASSWORD"
-replaceTag "<REGISTRY_EMAIL>" "$REGISTRY_EMAIL"
-replaceTag "<JENKINS_USERNAME>" "$JENKINS_USERNAME"
-replaceTag "<JENKINS_PASSWORD>" "$JENKINS_PASSWORD"
+if [ $1 != "" ]; then
+  replaceTag "<WSO2_SUBSCRIPTION_USERNAME>" $1
+  replaceTag "<WSO2_SUBSCRIPTION_PASSWORD>" $2
+  replaceTag "<REGISTRY_USERNAME>" $3
+  replaceTag "<REGISTRY_PASSWORD>" $4
+  replaceTag "<REGISTRY_EMAIL>" $5
+  replaceTag "<JENKINS_USERNAME>" $6
+  replaceTag "<JENKINS_PASSWORD>" $7
+  replaceTag "<GITHUB_USERNAME>" $8
+  replaceTag "<GITHUB_PASSWORD>" $9
+else
+  ${READ} -p "Enter Your WSO2 Username: " WSO2_SUBSCRIPTION_USERNAME
+  ${READ} -s -p "Enter Your WSO2 Password: " WSO2_SUBSCRIPTION_PASSWORD
+  ${ECHO}
+  ${READ} -p "Enter Your Registry Username: " REGISTRY_USERNAME
+  ${READ} -s -p "Enter Your Registry Password: " REGISTRY_PASSWORD
+  ${ECHO}
+  ${READ} -p "Enter Your Reigstry Email: " REGISTRY_EMAIL
+  ${READ} -p "Enter Your Jenkins username: " JENKINS_USERNAME
+  ${READ} -s -p "Enter Your Jenkins password: " JENKINS_PASSWORD
+  ${ECHO}
 
+  ${READ} -p "Enter Your Github username: " GITHUB_USERNAME
+  ${READ} -s -p "Enter Your Github password: " GITHUB_PASSWORD
+  ${ECHO}
+
+  replaceTag "<WSO2_SUBSCRIPTION_USERNAME>" "$WSO2_SUBSCRIPTION_USERNAME"
+  replaceTag "<WSO2_SUBSCRIPTION_PASSWORD>" "$WSO2_SUBSCRIPTION_PASSWORD"
+  replaceTag "<REGISTRY_USERNAME>" "$REGISTRY_USERNAME"
+  replaceTag "<REGISTRY_PASSWORD>" "$REGISTRY_PASSWORD"
+  replaceTag "<REGISTRY_EMAIL>" "$REGISTRY_EMAIL"
+  replaceTag "<JENKINS_USERNAME>" "$JENKINS_USERNAME"
+  replaceTag "<JENKINS_PASSWORD>" "$JENKINS_PASSWORD"
+  replaceTag "<GITHUB_USERNAME>" "$GITHUB_USERNAME"
+  replaceTag "<GITHUB_PASSWORD>" "$GITHUB_PASSWORD"
+fi
+
+${READ} -p "Do you want to add an application? " -n 1 -r
+${ECHO}
+
+if [[ ${REPLY} =~ ^[Yy]$ ]]; then
+
+  ${READ} -p "Name: " APP_NAME
+
+  ${READ} -p "Path to the test script: " TEST_PATH
+  ${READ} -p "Test command: " TEST_COMMAND
+
+  ${READ} -p "Chart name: " CHART_NAME
+  ${READ} -p "Url of git repo containin the chart" CHART_REPO
+
+  ${READ} -p "WSO2 image: " WSO2_IMAGE
+  ${READ} -p "Docker organization: " ORGANIZATION
+  ${READ} -p "Docker repository: " REPOSITORY
+  ${READ} -p "Git repository containing the docker resources: " GIT_REPO
+
+  function replaceValues() {
+      sed "s|$1|$2|"
+  }
+
+  echo "" >> jenkins/values.yaml
+  cat app.yaml | 
+  replaceValues APP_NAME $APP_NAME |
+  replaceValues TEST_PATH $TEST_PATH |
+  replaceValues TEST_COMMAND $TEST_COMMAND |
+  replaceValues CHART_NAME $CHART_NAME |
+  replaceValues CHART_REPO $CHART_REPO |
+  replaceValues CHART_REPO $WSO2_IMAGE |
+  replaceValues CHART_REPO $ORGANIZATION |
+  replaceValues CHART_REPO $REPOSITORY |
+  replaceValues CHART_REPO $GIT_REPO |
+  replaceValues EMAIL $WSO2_SUBSCRIPTION_USERNAME >> jenkins/values.yaml
+
+fi
+
+cd jenkins
 helm dependency build
-helm dependency update
-
-# helm upgrade jenkins . -f values.yaml --install --namespace jenkins
+# helm dependency update
 
