@@ -53,6 +53,10 @@ spec:
             secretKeyRef:
               name: registry-credentials-pod
               key: password
+        - name: GITHUB_USERNAME
+          value: {{ .Values.github.username}}
+        - name: GITHUB_PASSWORD
+          value: {{ .Values.github.password}}
         - name: CASC_JENKINS_CONFIG
           value: "/var/casc_configs"
         imagePullPolicy: Always

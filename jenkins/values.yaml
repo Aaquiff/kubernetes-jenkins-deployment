@@ -15,6 +15,10 @@ registry:
   email: <REGISTRY_EMAIL>
   address: index.docker.io
 
+github:
+  username: <GITHUB_USERNAME>
+  password: <GITHUB_PASSWORD>
+
 applications:
   - name: wso2ei
     email: <WSO2_USERNAME>

@@ -28,6 +28,15 @@ data:
                 scm:
                   git:
                     remote: "https://github.com/Aaquiff/jenkins-shared-lib"
+    credentials:
+      system:
+        domainCredentials:
+          - credentials:
+              - usernamePassword:
+                  scope: GLOBAL
+                  id: github_credentials
+                  username: ${GITHUB_USERNAME}
+                  password: ${GITHUB_PASSWORD}
     jenkins:
       systemMessage: "WSO2 CI/CD Setup"
       securityRealm:
@@ -56,6 +65,7 @@ data:
                     remote {
                         name('docker-repo')
                         url('{{ $image.gitRepo }}')
+                        credentials('github_credentials')
                     }
                 }
             }
@@ -87,6 +97,7 @@ data:
                     remote {
                         name('docker-repo')
                         url('{{ $image.gitRepo }}')
+                        credentials('github_credentials')
                     }
                 }
             }
@@ -115,6 +126,7 @@ data:
                     remote {
                         name('chart-repo')
                         url('{{ .chart.repo }}')
+                        credentials('github_credentials')
                     }
                 }
             }
