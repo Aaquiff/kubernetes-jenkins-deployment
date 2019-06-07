@@ -107,8 +107,5 @@ spec:
       - name: jenkins-casc-conf
         configMap:
           name: jenkins-casc-conf
-      - name: registry-credentials-pod
-        secret:
-          secretName: registry-credentials-pod
       - name: helm-conf
         emptyDir: {}
