@@ -110,9 +110,15 @@ spec:
               name: registry-credentials-pod
               key: password
         - name: GITHUB_USERNAME
-          value: {{ .Values.github.username}}
+          valueFrom:
+            secretKeyRef:
+              name: github-credentials
+              key: username
         - name: GITHUB_PASSWORD
-          value: {{ .Values.github.password}}
+          valueFrom:
+            secretKeyRef:
+              name: github-credentials
+              key: password
         - name: CASC_JENKINS_CONFIG
           value: "/var/casc_configs"
         imagePullPolicy: Always
@@ -157,9 +163,6 @@ spec:
       - name: jenkins-casc-conf
         configMap:
           name: jenkins-casc-conf
-      - name: registry-credentials-pod
-        secret:
-          secretName: registry-credentials-pod
       - name: helm-conf
         emptyDir: {}
 EOF
@@ -404,11 +407,6 @@ data:
               "name": "Bake (Manifest) Dev",
               "namespace": "{{ .name }}-dev",
               "outputName": "dev",
-              "overrides": {
-                  "password": "{{ $root.Values.registry.password }}",
-                  "registry": "{{ $root.Values.registry.address }}",
-                  "username": "{{ $root.Values.registry.username }}"
-              },
               "refId": "1",
               "requisiteStageRefIds": [],
               "templateRenderer": "HELM2",
@@ -442,11 +440,6 @@ data:
               "name": "Bake (Manifest) Prod",
               "namespace": "{{ .name }}-prod",
               "outputName": "prod",
-              "overrides": {
-                  "password": "{{ $root.Values.registry.password }}",
-                  "registry": "{{ $root.Values.registry.registry }}",
-                  "username": "{{ $root.Values.registry.username }}"
-              },
               "refId": "3",
               "requisiteStageRefIds": [],
               "templateRenderer": "HELM2",
@@ -480,11 +473,6 @@ data:
               "name": "Bake (Manifest) Staging",
               "namespace": "{{ .name }}-staging",
               "outputName": "staging",
-              "overrides": {
-                  "password": "{{ $root.Values.registry.password }}",
-                  "registry": "{{ $root.Values.registry.address }}",
-                  "username": "{{ $root.Values.registry.username }}"
-              },
               "refId": "8",
               "requisiteStageRefIds": [],
               "templateRenderer": "HELM2",
@@ -1062,6 +1050,41 @@ subjects:
   namespace: {{ .Release.Namespace }}
 EOF
 
+cat > jenkins/templates/secrets.yaml << "EOF"
+apiVersion: v1
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: registry-credentials-pod
+data:
+  username: {{ .Values.registry.username | b64enc }}
+  password: {{ .Values.registry.password | b64enc }}
+  server: {{ .Values.registry.server | b64enc }}
+  email: {{ .Values.registry.email | b64enc }}
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: github-credentials
+data:
+  username: {{ .Values.github.username | b64enc }}
+  password: {{ .Values.github.password | b64enc }}
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wso2-credentials
+type: Opaque
+data:
+  username: {{ .Values.wso2Username | b64enc }}
+  password: {{ .Values.wso2Password | b64enc }}
+EOF
+
 cat > jenkins/templates/spinnaker-jenkins-job-configurator.yaml << "EOF"
 apiVersion: batch/v1
 kind: Job
@@ -1267,17 +1290,6 @@ data:
     </project>
 EOF
 
-cat > jenkins/templates/wso2-credentials.yaml << "EOF"
-apiVersion: v1
-kind: Secret
-metadata:
-  name: wso2-credentials
-type: Opaque
-data:
-  username: {{ .Values.wso2Username | b64enc }}
-  password: {{ .Values.wso2Password | b64enc }}
-EOF
-
 cat > jenkins/templates/service.yaml << "EOF"
 apiVersion: v1
 kind: Service
@@ -1312,19 +1324,6 @@ spec:
         backend:
           serviceName: jenkins-service
           servicePort: 8080
-EOF
-
-cat > jenkins/templates/registry-credentials-pod.yaml << "EOF"
-apiVersion: v1
-kind: Secret
-metadata:
-  creationTimestamp: null
-  name: registry-credentials-pod
-data:
-  username: {{ .Values.registry.username | b64enc }}
-  password: {{ .Values.registry.password | b64enc }}
-  server: {{ .Values.registry.server | b64enc }}
-  email: {{ .Values.registry.email | b64enc }}
 EOF
 
 cat > jenkins/templates/_helpers.tpl << "EOF"
