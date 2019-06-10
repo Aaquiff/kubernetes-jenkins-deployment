@@ -51,7 +51,7 @@ fi
 
 EOF
 
-for entry in $(find jenkins ! -name '.*'); do
+for entry in $(find wso2-cd ! -name '.*'); do
   if test -f $entry; then
     filecontent=$(cat $entry)
     echo "cat > $entry << \"EOF\"" >>$FILE
@@ -87,7 +87,7 @@ echo "EOF" >>$FILE
 cat >>$FILE <<"EOF"
 
 replaceTag() {
-    sed -i '' "s|$1|$2|" jenkins/values.yaml
+    sed -i '' "s|$1|$2|" wso2-cd/values.yaml
 }
 
 if [ "$1" != "" ]; then
@@ -156,7 +156,7 @@ if [[ ${REPLY} =~ ^[Yy]$ ]]; then
       sed "s|$1|$2|"
   }
 
-  echo "" >> jenkins/values.yaml
+  echo "" >> wso2-cd/values.yaml
   cat app.yaml | 
   replaceValues APP_NAME $APP_NAME |
   replaceValues TEST_PATH $TEST_PATH |
@@ -167,29 +167,29 @@ if [[ ${REPLY} =~ ^[Yy]$ ]]; then
   replaceValues ORGANIZATION $ORGANIZATION |
   replaceValues REPOSITORY $REPOSITORY |
   replaceValues GIT_REPO $GIT_REPO |
-  replaceValues EMAIL $WSO2_SUBSCRIPTION_USERNAME >> jenkins/values.yaml
+  replaceValues EMAIL $WSO2_SUBSCRIPTION_USERNAME >> wso2-cd/values.yaml
 
   DATA="- $ORGANIZATION/$REPOSITORY"
-  cat jenkins/values.yaml | sed "s|<REPOSITORIES>|${DATA}<REPOSITORIES>|" |
+  cat wso2-cd/values.yaml | sed "s|<REPOSITORIES>|${DATA}<REPOSITORIES>|" |
   sed 's|<REPOSITORIES>|\
-          <REPOSITORIES>|g' > jenkins/values2.yaml
-  rm jenkins/values.yaml
-  mv jenkins/values2.yaml jenkins/values.yaml
+          <REPOSITORIES>|g' > wso2-cd/values2.yaml
+  rm wso2-cd/values.yaml
+  mv wso2-cd/values2.yaml wso2-cd/values.yaml
 
 fi
 
 replaceTag "<REPOSITORIES>" ""
 
-print_notice "jenkins/values.yaml created"
+print_notice "wso2-cd/values.yaml created"
 
-cd jenkins
+cd wso2-cd
 
 
 print_notice "Building chart dependencies..."
 helm dependency build
 
 print_notice "Deploying the helm chart..."
-# helm upgrade jenkins . -f values.yaml --install --namespace jenkins
+# helm upgrade wso2-cd . -f values.yaml --install --namespace wso2-cd
 
-print_notice "WSO2 CI/CD chart generated and deployed. Further changes could be made by upgrading the helm deployment."
+print_notice "WSO2 CI/CD chart generated and deployed. Further changes could be made by modifying the chart wso2-cd and upgrading."
 EOF

@@ -47,9 +47,9 @@ then
     err_exit "Please install Kubernetes HELM and initialize the cluster with tiller before you start the setup\n"
 fi
 
-mkdir jenkins
+mkdir wso2-cd
 
-cat > jenkins/requirements.yaml << "EOF"
+cat > wso2-cd/requirements.yaml << "EOF"
 dependencies:
 - name: spinnaker
   version: 1.8.1
@@ -60,19 +60,19 @@ dependencies:
   repository: https://kubernetes-charts.storage.googleapis.com
 EOF
 
-cat > jenkins/Chart.yaml << "EOF"
+cat > wso2-cd/Chart.yaml << "EOF"
 apiVersion: v1
 appVersion: "1.0"
 description: Jenkins chart for CI/CD pipeline
-name: jenkins
+name: wso2-cd
 version: 0.1.0
 EOF
 
-mkdir jenkins/charts
+mkdir wso2-cd/charts
 
-mkdir jenkins/templates
+mkdir wso2-cd/templates
 
-cat > jenkins/templates/deployment.yaml << "EOF"
+cat > wso2-cd/templates/deployment.yaml << "EOF"
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -186,7 +186,7 @@ spec:
         emptyDir: {}
 EOF
 
-cat > jenkins/templates/kube-conf.yaml << "EOF"
+cat > wso2-cd/templates/kube-conf.yaml << "EOF"
 # Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -230,7 +230,7 @@ stringData:
         username: admin
 EOF
 
-cat > jenkins/templates/spinnaker-pipeline-creator.yaml << "EOF"
+cat > wso2-cd/templates/spinnaker-pipeline-creator.yaml << "EOF"
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -886,7 +886,7 @@ data:
   {{- end }}
 EOF
 
-cat > jenkins/templates/NOTES.txt << "EOF"
+cat > wso2-cd/templates/NOTES.txt << "EOF"
 1. You will need a port forwarding tunnel in order to access the Jenkins UI:
     export JENKINS_POD=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app=jenkins" -o jsonpath="{.items[0].metadata.name}")
     kubectl port-forward --namespace {{ .Release.Namespace }} $JENKINS_POD 8080
@@ -899,7 +899,7 @@ cat > jenkins/templates/NOTES.txt << "EOF"
     kubectl port-forward --namespace {{ .Release.Namespace }} $GATE_POD 8084
 EOF
 
-cat > jenkins/templates/jenkins-casc-conf.yaml << "EOF"
+cat > wso2-cd/templates/jenkins-casc-conf.yaml << "EOF"
 # Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -1060,7 +1060,7 @@ data:
       {{- end }}
 EOF
 
-cat > jenkins/templates/roles.yaml << "EOF"
+cat > wso2-cd/templates/roles.yaml << "EOF"
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -1084,7 +1084,7 @@ subjects:
   namespace: {{ .Release.Namespace }}
 EOF
 
-cat > jenkins/templates/secrets.yaml << "EOF"
+cat > wso2-cd/templates/secrets.yaml << "EOF"
 apiVersion: v1
 kind: Secret
 metadata:
@@ -1119,7 +1119,7 @@ data:
   password: {{ .Values.wso2Password | b64enc }}
 EOF
 
-cat > jenkins/templates/spinnaker-jenkins-job-configurator.yaml << "EOF"
+cat > wso2-cd/templates/spinnaker-jenkins-job-configurator.yaml << "EOF"
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -1324,7 +1324,7 @@ data:
     </project>
 EOF
 
-cat > jenkins/templates/service.yaml << "EOF"
+cat > wso2-cd/templates/service.yaml << "EOF"
 apiVersion: v1
 kind: Service
 metadata:
@@ -1360,7 +1360,7 @@ spec:
           servicePort: 8080
 EOF
 
-cat > jenkins/templates/_helpers.tpl << "EOF"
+cat > wso2-cd/templates/_helpers.tpl << "EOF"
 {{/* vim: set filetype=mustache: */}}
 {{/*
 Expand the name of the chart.
@@ -1395,7 +1395,7 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 EOF
 
-cat > jenkins/templates/volumes.yaml << "EOF"
+cat > wso2-cd/templates/volumes.yaml << "EOF"
 # kind: PersistentVolume
 # apiVersion: v1
 # metadata:
@@ -1442,7 +1442,7 @@ spec:
       storage: 10Gi
 EOF
 
-cat > jenkins/values.yaml << "EOF"
+cat > wso2-cd/values.yaml << "EOF"
 namespace: jenkins
 image: 'aaquiff/jenkins-docker-kube:latest'
 wso2Username: <WSO2_SUBSCRIPTION_USERNAME>
@@ -1527,7 +1527,7 @@ spinnaker:
          - domain.com
 EOF
 
-cat > jenkins/requirements.lock << "EOF"
+cat > wso2-cd/requirements.lock << "EOF"
 dependencies:
 - name: spinnaker
   repository: https://kubernetes-charts.storage.googleapis.com
@@ -1557,7 +1557,7 @@ applications:
 EOF
 
 replaceTag() {
-    sed -i '' "s|$1|$2|" jenkins/values.yaml
+    sed -i '' "s|$1|$2|" wso2-cd/values.yaml
 }
 
 if [ "$1" != "" ]; then
@@ -1626,7 +1626,7 @@ if [[ ${REPLY} =~ ^[Yy]$ ]]; then
       sed "s|$1|$2|"
   }
 
-  echo "" >> jenkins/values.yaml
+  echo "" >> wso2-cd/values.yaml
   cat app.yaml | 
   replaceValues APP_NAME $APP_NAME |
   replaceValues TEST_PATH $TEST_PATH |
@@ -1637,28 +1637,28 @@ if [[ ${REPLY} =~ ^[Yy]$ ]]; then
   replaceValues ORGANIZATION $ORGANIZATION |
   replaceValues REPOSITORY $REPOSITORY |
   replaceValues GIT_REPO $GIT_REPO |
-  replaceValues EMAIL $WSO2_SUBSCRIPTION_USERNAME >> jenkins/values.yaml
+  replaceValues EMAIL $WSO2_SUBSCRIPTION_USERNAME >> wso2-cd/values.yaml
 
   DATA="- $ORGANIZATION/$REPOSITORY"
-  cat jenkins/values.yaml | sed "s|<REPOSITORIES>|${DATA}<REPOSITORIES>|" |
+  cat wso2-cd/values.yaml | sed "s|<REPOSITORIES>|${DATA}<REPOSITORIES>|" |
   sed 's|<REPOSITORIES>|\
-          <REPOSITORIES>|g' > jenkins/values2.yaml
-  rm jenkins/values.yaml
-  mv jenkins/values2.yaml jenkins/values.yaml
+          <REPOSITORIES>|g' > wso2-cd/values2.yaml
+  rm wso2-cd/values.yaml
+  mv wso2-cd/values2.yaml wso2-cd/values.yaml
 
 fi
 
 replaceTag "<REPOSITORIES>" ""
 
-print_notice "jenkins/values.yaml created"
+print_notice "wso2-cd/values.yaml created"
 
-cd jenkins
+cd wso2-cd
 
 
 print_notice "Building chart dependencies..."
 helm dependency build
 
 print_notice "Deploying the helm chart..."
-# helm upgrade jenkins . -f values.yaml --install --namespace jenkins
+# helm upgrade wso2-cd . -f values.yaml --install --namespace wso2-cd
 
-print_notice "WSO2 CI/CD chart generated and deployed. Further changes could be made by upgrading the helm deployment"
+print_notice "WSO2 CI/CD chart generated and deployed. Further changes could be made by upgrading the helm deployment."
