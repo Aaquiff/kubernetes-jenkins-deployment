@@ -1445,20 +1445,20 @@ github:
   username: <GITHUB_USERNAME>
   password: <GITHUB_PASSWORD>
 
-applications:
-  - name: wso2ei
-    email: <WSO2_USERNAME>
-    testScript:
-      path: tests
-      command: test.sh
-    chart:
-      name: scalable-integrator
-      repo: 'https://github.com/Aaquiff/ei-cd'
-    images:
-      - wso2Image: 'docker.wso2.com/wso2ei-integrator:6.4.0'
-        organization: aaquiff
-        repository: wso2ei-6.4.0
-        gitRepo: 'https://github.com/Aaquiff/docker-ei'
+# applications:
+#   - name: wso2ei
+#     email: <WSO2_USERNAME>
+#     testScript:
+#       path: tests
+#       command: test.sh
+#     chart:
+#       name: scalable-integrator
+#       repo: 'https://github.com/Aaquiff/ei-cd'
+#     images:
+#       - wso2Image: 'docker.wso2.com/wso2ei-integrator:6.4.0'
+#         organization: aaquiff
+#         repository: wso2ei-6.4.0
+#         gitRepo: 'https://github.com/Aaquiff/docker-ei'
 
 # Values for Spinnaker chart
 spinnaker:
@@ -1578,18 +1578,18 @@ replaceTag "<JENKINS_PASSWORD>" "$JENKINS_PASSWORD"
 replaceTag "<GITHUB_USERNAME>" "$GITHUB_USERNAME"
 replaceTag "<GITHUB_PASSWORD>" "$GITHUB_PASSWORD"
 
-read -p "Do you want to add an application?" -n 1 -r
+read -p "Do you want to add a preconfigured application?(N/y)" -n 1 -r
 ${ECHO}
 
 if [[ ${REPLY} =~ ^[Yy]$ ]]; then
 
-  read -p "Name: " APP_NAME
+  read -p "Uniqe name for you application: " APP_NAME
 
-  read -p "Path to the test script: " TEST_PATH
-  read -p "Test command: " TEST_COMMAND
-
-  read -p "Chart name: " CHART_NAME
-  read -p "Url of git repo containin the chart" CHART_REPO
+  read -p "Url for the git repo containing the chart: " CHART_REPO
+  read -p "Name of the chart (folder with same name should be present at the root of the repository): " CHART_NAME
+  
+  read -p "Path to the test script within the git repository(excluding the filename): " TEST_PATH
+  read -p "Test file name at the given path : " TEST_COMMAND
 
   read -p "WSO2 image: " WSO2_IMAGE
   read -p "Docker organization: " ORGANIZATION
@@ -1625,6 +1625,5 @@ fi
 replaceTag "<REPOSITORIES>" ""
 
 cd jenkins
-# helm dependency build
-# helm dependency update
+helm dependency build
 
