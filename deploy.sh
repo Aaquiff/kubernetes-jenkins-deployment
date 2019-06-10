@@ -19,14 +19,33 @@
 set -e 
 
 ECHO=`which echo`
-READ=`which read`
 
 # methods
 function echoBold () {
-    ${ECHO} -e $'\e[1m'"${1}"$'\e[0m'
+  echo -en  $'\e[1m'"${1}"$'\e[0m'
 }
 
-echoBold "WSO2 CI/CD Setup Provider"
+function err_exit(){
+    msg=$@
+    echoBold "ERROR: ${msg}"
+    exit 1
+}
+
+function print_notice() {
+  echo ""
+  echoBold "$1\n"
+}
+
+echoBold "==========================\n"
+echoBold "WSO2 CI/CD Setup Provider\n"
+echoBold "==========================\n"
+echo "Follow this script to generate and deploy the HELM chart for WSO2 CI/CD setup along with a customized values.yaml file generated based on the input provided in this script."
+
+
+if [[ ! $(which helm) ]]
+then
+    err_exit "Please install Kubernetes HELM and initialize the cluster with tiller before you start the setup\n"
+fi
 
 mkdir jenkins
 
@@ -1541,7 +1560,7 @@ replaceTag() {
     sed -i '' "s|$1|$2|" jenkins/values.yaml
 }
 
-if [ $1 != "" ]; then
+if [ "$1" != "" ]; then
   WSO2_SUBSCRIPTION_USERNAME=$1
   WSO2_SUBSCRIPTION_PASSWORD=$2
   REGISTRY_USERNAME=$3
@@ -1552,17 +1571,23 @@ if [ $1 != "" ]; then
   GITHUB_USERNAME=$8
   GITHUB_PASSWORD=$9
 else
+  print_notice "WSO2 Subscription credentials"
   read -p "Enter Your WSO2 Username: " WSO2_SUBSCRIPTION_USERNAME
   read -s -p "Enter Your WSO2 Password: " WSO2_SUBSCRIPTION_PASSWORD
   ${ECHO}
+  print_notice "Docker registry credentials"
+
   read -p "Enter Your Registry Username: " REGISTRY_USERNAME
   read -s -p "Enter Your Registry Password: " REGISTRY_PASSWORD
   ${ECHO}
-  read -p "Enter Your Reigstry Email: " REGISTRY_EMAIL
+  read -p "Enter Your Registry Email: " REGISTRY_EMAIL
+
+  print_notice "Jenkins credentials for the admin user to be created."
   read -p "Enter Your Jenkins username: " JENKINS_USERNAME
   read -s -p "Enter Your Jenkins password: " JENKINS_PASSWORD
   ${ECHO}
 
+  print_notice "Github credentials are required to access the repositories used in the setup"
   read -p "Enter Your Github username: " GITHUB_USERNAME
   read -s -p "Enter Your Github password: " GITHUB_PASSWORD
   ${ECHO}
@@ -1578,7 +1603,8 @@ replaceTag "<JENKINS_PASSWORD>" "$JENKINS_PASSWORD"
 replaceTag "<GITHUB_USERNAME>" "$GITHUB_USERNAME"
 replaceTag "<GITHUB_PASSWORD>" "$GITHUB_PASSWORD"
 
-read -p "Do you want to add a preconfigured application?(N/y)" -n 1 -r
+print_notice "Jenkins and spinnaker pipelines could also be preconfigured."
+read -p "Do you want to create pipelines for an application?(N/y)" -n 1 -r
 ${ECHO}
 
 if [[ ${REPLY} =~ ^[Yy]$ ]]; then
@@ -1624,6 +1650,15 @@ fi
 
 replaceTag "<REPOSITORIES>" ""
 
+print_notice "jenkins/values.yaml created"
+
 cd jenkins
+
+
+print_notice "Building chart dependencies..."
 helm dependency build
 
+print_notice "Deploying the helm chart..."
+# helm upgrade jenkins . -f values.yaml --install --namespace jenkins
+
+print_notice "WSO2 CI/CD chart generated and deployed. Further changes could be made by upgrading the helm deployment"
