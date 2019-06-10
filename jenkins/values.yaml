@@ -19,20 +19,20 @@ github:
   username: <GITHUB_USERNAME>
   password: <GITHUB_PASSWORD>
 
-applications:
-  - name: wso2ei
-    email: <WSO2_USERNAME>
-    testScript:
-      path: tests
-      command: test.sh
-    chart:
-      name: scalable-integrator
-      repo: 'https://github.com/Aaquiff/ei-cd'
-    images:
-      - wso2Image: 'docker.wso2.com/wso2ei-integrator:6.4.0'
-        organization: aaquiff
-        repository: wso2ei-6.4.0
-        gitRepo: 'https://github.com/Aaquiff/docker-ei'
+# applications:
+#   - name: wso2ei
+#     email: <WSO2_USERNAME>
+#     testScript:
+#       path: tests
+#       command: test.sh
+#     chart:
+#       name: scalable-integrator
+#       repo: 'https://github.com/Aaquiff/ei-cd'
+#     images:
+#       - wso2Image: 'docker.wso2.com/wso2ei-integrator:6.4.0'
+#         organization: aaquiff
+#         repository: wso2ei-6.4.0
+#         gitRepo: 'https://github.com/Aaquiff/docker-ei'
 
 # Values for Spinnaker chart
 spinnaker:
@@ -43,8 +43,7 @@ spinnaker:
       password: <REGISTRY_PASSWORD>
       email: <REGISTRY_EMAIL>
       repositories:
-        - aaquiff/wso2ei-6.4.0
-        - aaquiff/wso2ei-integrator
+        <REPOSITORIES>
   halyard:
     spinnakerVersion: 1.13.8
     image:

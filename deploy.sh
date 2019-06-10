@@ -407,6 +407,11 @@ data:
               "name": "Bake (Manifest) Dev",
               "namespace": "{{ .name }}-dev",
               "outputName": "dev",
+              "overrides": {
+                  "password": "{{ $root.Values.registry.password }}",
+                  "registry": "{{ $root.Values.registry.address }}",
+                  "username": "{{ $root.Values.registry.username }}"
+              },
               "refId": "1",
               "requisiteStageRefIds": [],
               "templateRenderer": "HELM2",
@@ -440,6 +445,11 @@ data:
               "name": "Bake (Manifest) Prod",
               "namespace": "{{ .name }}-prod",
               "outputName": "prod",
+              "overrides": {
+                  "password": "{{ $root.Values.registry.password }}",
+                  "registry": "{{ $root.Values.registry.registry }}",
+                  "username": "{{ $root.Values.registry.username }}"
+              },
               "refId": "3",
               "requisiteStageRefIds": [],
               "templateRenderer": "HELM2",
@@ -473,6 +483,11 @@ data:
               "name": "Bake (Manifest) Staging",
               "namespace": "{{ .name }}-staging",
               "outputName": "staging",
+              "overrides": {
+                  "password": "{{ $root.Values.registry.password }}",
+                  "registry": "{{ $root.Values.registry.address }}",
+                  "username": "{{ $root.Values.registry.username }}"
+              },
               "refId": "8",
               "requisiteStageRefIds": [],
               "templateRenderer": "HELM2",
@@ -1454,8 +1469,7 @@ spinnaker:
       password: <REGISTRY_PASSWORD>
       email: <REGISTRY_EMAIL>
       repositories:
-        - aaquiff/wso2ei-6.4.0
-        - aaquiff/wso2ei-integrator
+        <REPOSITORIES>
   halyard:
     spinnakerVersion: 1.13.8
     image:
@@ -1528,59 +1542,59 @@ replaceTag() {
 }
 
 if [ $1 != "" ]; then
-  replaceTag "<WSO2_SUBSCRIPTION_USERNAME>" $1
-  replaceTag "<WSO2_SUBSCRIPTION_PASSWORD>" $2
-  replaceTag "<REGISTRY_USERNAME>" $3
-  replaceTag "<REGISTRY_PASSWORD>" $4
-  replaceTag "<REGISTRY_EMAIL>" $5
-  replaceTag "<JENKINS_USERNAME>" $6
-  replaceTag "<JENKINS_PASSWORD>" $7
-  replaceTag "<GITHUB_USERNAME>" $8
-  replaceTag "<GITHUB_PASSWORD>" $9
+  WSO2_SUBSCRIPTION_USERNAME=$1
+  WSO2_SUBSCRIPTION_PASSWORD=$2
+  REGISTRY_USERNAME=$3
+  REGISTRY_PASSWORD=$4
+  REGISTRY_EMAIL=$5
+  JENKINS_USERNAME=$6
+  JENKINS_PASSWORD=$7
+  GITHUB_USERNAME=$8
+  GITHUB_PASSWORD=$9
 else
-  ${READ} -p "Enter Your WSO2 Username: " WSO2_SUBSCRIPTION_USERNAME
-  ${READ} -s -p "Enter Your WSO2 Password: " WSO2_SUBSCRIPTION_PASSWORD
+  read -p "Enter Your WSO2 Username: " WSO2_SUBSCRIPTION_USERNAME
+  read -s -p "Enter Your WSO2 Password: " WSO2_SUBSCRIPTION_PASSWORD
   ${ECHO}
-  ${READ} -p "Enter Your Registry Username: " REGISTRY_USERNAME
-  ${READ} -s -p "Enter Your Registry Password: " REGISTRY_PASSWORD
+  read -p "Enter Your Registry Username: " REGISTRY_USERNAME
+  read -s -p "Enter Your Registry Password: " REGISTRY_PASSWORD
   ${ECHO}
-  ${READ} -p "Enter Your Reigstry Email: " REGISTRY_EMAIL
-  ${READ} -p "Enter Your Jenkins username: " JENKINS_USERNAME
-  ${READ} -s -p "Enter Your Jenkins password: " JENKINS_PASSWORD
-  ${ECHO}
-
-  ${READ} -p "Enter Your Github username: " GITHUB_USERNAME
-  ${READ} -s -p "Enter Your Github password: " GITHUB_PASSWORD
+  read -p "Enter Your Reigstry Email: " REGISTRY_EMAIL
+  read -p "Enter Your Jenkins username: " JENKINS_USERNAME
+  read -s -p "Enter Your Jenkins password: " JENKINS_PASSWORD
   ${ECHO}
 
-  replaceTag "<WSO2_SUBSCRIPTION_USERNAME>" "$WSO2_SUBSCRIPTION_USERNAME"
-  replaceTag "<WSO2_SUBSCRIPTION_PASSWORD>" "$WSO2_SUBSCRIPTION_PASSWORD"
-  replaceTag "<REGISTRY_USERNAME>" "$REGISTRY_USERNAME"
-  replaceTag "<REGISTRY_PASSWORD>" "$REGISTRY_PASSWORD"
-  replaceTag "<REGISTRY_EMAIL>" "$REGISTRY_EMAIL"
-  replaceTag "<JENKINS_USERNAME>" "$JENKINS_USERNAME"
-  replaceTag "<JENKINS_PASSWORD>" "$JENKINS_PASSWORD"
-  replaceTag "<GITHUB_USERNAME>" "$GITHUB_USERNAME"
-  replaceTag "<GITHUB_PASSWORD>" "$GITHUB_PASSWORD"
+  read -p "Enter Your Github username: " GITHUB_USERNAME
+  read -s -p "Enter Your Github password: " GITHUB_PASSWORD
+  ${ECHO}
 fi
 
-${READ} -p "Do you want to add an application? " -n 1 -r
+replaceTag "<WSO2_SUBSCRIPTION_USERNAME>" "$WSO2_SUBSCRIPTION_USERNAME"
+replaceTag "<WSO2_SUBSCRIPTION_PASSWORD>" "$WSO2_SUBSCRIPTION_PASSWORD"
+replaceTag "<REGISTRY_USERNAME>" "$REGISTRY_USERNAME"
+replaceTag "<REGISTRY_PASSWORD>" "$REGISTRY_PASSWORD"
+replaceTag "<REGISTRY_EMAIL>" "$REGISTRY_EMAIL"
+replaceTag "<JENKINS_USERNAME>" "$JENKINS_USERNAME"
+replaceTag "<JENKINS_PASSWORD>" "$JENKINS_PASSWORD"
+replaceTag "<GITHUB_USERNAME>" "$GITHUB_USERNAME"
+replaceTag "<GITHUB_PASSWORD>" "$GITHUB_PASSWORD"
+
+read -p "Do you want to add an application?" -n 1 -r
 ${ECHO}
 
 if [[ ${REPLY} =~ ^[Yy]$ ]]; then
 
-  ${READ} -p "Name: " APP_NAME
+  read -p "Name: " APP_NAME
 
-  ${READ} -p "Path to the test script: " TEST_PATH
-  ${READ} -p "Test command: " TEST_COMMAND
+  read -p "Path to the test script: " TEST_PATH
+  read -p "Test command: " TEST_COMMAND
 
-  ${READ} -p "Chart name: " CHART_NAME
-  ${READ} -p "Url of git repo containin the chart" CHART_REPO
+  read -p "Chart name: " CHART_NAME
+  read -p "Url of git repo containin the chart" CHART_REPO
 
-  ${READ} -p "WSO2 image: " WSO2_IMAGE
-  ${READ} -p "Docker organization: " ORGANIZATION
-  ${READ} -p "Docker repository: " REPOSITORY
-  ${READ} -p "Git repository containing the docker resources: " GIT_REPO
+  read -p "WSO2 image: " WSO2_IMAGE
+  read -p "Docker organization: " ORGANIZATION
+  read -p "Docker repository: " REPOSITORY
+  read -p "Git repository containing the docker resources: " GIT_REPO
 
   function replaceValues() {
       sed "s|$1|$2|"
@@ -1593,15 +1607,24 @@ if [[ ${REPLY} =~ ^[Yy]$ ]]; then
   replaceValues TEST_COMMAND $TEST_COMMAND |
   replaceValues CHART_NAME $CHART_NAME |
   replaceValues CHART_REPO $CHART_REPO |
-  replaceValues CHART_REPO $WSO2_IMAGE |
-  replaceValues CHART_REPO $ORGANIZATION |
-  replaceValues CHART_REPO $REPOSITORY |
-  replaceValues CHART_REPO $GIT_REPO |
+  replaceValues WSO2_IMAGE $WSO2_IMAGE |
+  replaceValues ORGANIZATION $ORGANIZATION |
+  replaceValues REPOSITORY $REPOSITORY |
+  replaceValues GIT_REPO $GIT_REPO |
   replaceValues EMAIL $WSO2_SUBSCRIPTION_USERNAME >> jenkins/values.yaml
+
+  DATA="- $ORGANIZATION/$REPOSITORY"
+  cat jenkins/values.yaml | sed "s|<REPOSITORIES>|${DATA}<REPOSITORIES>|" |
+  sed 's|<REPOSITORIES>|\
+          <REPOSITORIES>|g' > jenkins/values2.yaml
+  rm jenkins/values.yaml
+  mv jenkins/values2.yaml jenkins/values.yaml
 
 fi
 
+replaceTag "<REPOSITORIES>" ""
+
 cd jenkins
-helm dependency build
+# helm dependency build
 # helm dependency update
 
