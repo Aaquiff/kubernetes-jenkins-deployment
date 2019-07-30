@@ -1,16 +1,55 @@
-# WSO2 CI/CD Setup Provider
+#!/bin/bash
 
-WSO2_USERNAME=$1
-WSO2_PASSWORD=$2
-REGISTRY_USERNAME=$3
-REGISTRY_PASSWORD=$4
-REGISTRY_EMAIL=$5
-JENKINS_USERNAME=$6
-JENKINS_PASSWORD=$7
+# ------------------------------------------------------------------------
+# Copyright 2017 WSO2, Inc. (http://wso2.com)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License
+# ------------------------------------------------------------------------
 
-mkdir jenkins
+set -e 
 
-cat > jenkins/requirements.yaml << "EOF"
+ECHO=`which echo`
+
+# methods
+function echoBold () {
+  echo -en  $'\e[1m'"${1}"$'\e[0m'
+}
+
+function err_exit(){
+    msg=$@
+    echoBold "ERROR: ${msg}"
+    exit 1
+}
+
+function print_notice() {
+  echo ""
+  echoBold "$1\n"
+}
+
+echoBold "==========================\n"
+echoBold "WSO2 CI/CD Setup Provider\n"
+echoBold "==========================\n"
+echo "Follow this script to generate and deploy the HELM chart for WSO2 CI/CD setup along with a customized values.yaml file generated based on the input provided in this script."
+
+
+if [[ ! $(which helm) ]]
+then
+    err_exit "Please install Kubernetes HELM and initialize the cluster with tiller before you start the setup\n"
+fi
+
+mkdir wso2-cd
+
+cat > wso2-cd/requirements.yaml << "EOF"
 dependencies:
 - name: spinnaker
   version: 1.8.1
@@ -21,19 +60,19 @@ dependencies:
   repository: https://kubernetes-charts.storage.googleapis.com
 EOF
 
-cat > jenkins/Chart.yaml << "EOF"
+cat > wso2-cd/Chart.yaml << "EOF"
 apiVersion: v1
 appVersion: "1.0"
 description: Jenkins chart for CI/CD pipeline
-name: jenkins
+name: wso2-cd
 version: 0.1.0
 EOF
 
-mkdir jenkins/charts
+mkdir wso2-cd/charts
 
-mkdir jenkins/templates
+mkdir wso2-cd/templates
 
-cat > jenkins/templates/deployment.yaml << "EOF"
+cat > wso2-cd/templates/deployment.yaml << "EOF"
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -89,18 +128,30 @@ spec:
             secretKeyRef:
               name: registry-credentials-pod
               key: password
+        - name: GITHUB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: github-credentials
+              key: username
+        - name: GITHUB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: github-credentials
+              key: password
         - name: CASC_JENKINS_CONFIG
           value: "/var/casc_configs"
         imagePullPolicy: Always
         readinessProbe:
           periodSeconds: 10
-          exec:
-            command:
-            - /bin/bash
-            - -c
-            - wum version
-            - docker version
-            - helm repo list
+          httpGet:
+            path: "/login"
+            port: 8080
+        livenessProbe:
+          periodSeconds: 10
+          initialDelaySeconds: 300
+          httpGet:
+            path: "/login"
+            port: 8080
         securityContext:
           runAsUser: 0
         volumeMounts:
@@ -131,14 +182,11 @@ spec:
       - name: jenkins-casc-conf
         configMap:
           name: jenkins-casc-conf
-      - name: registry-credentials-pod
-        secret:
-          secretName: registry-credentials-pod
       - name: helm-conf
         emptyDir: {}
 EOF
 
-cat > jenkins/templates/kube-conf.yaml << "EOF"
+cat > wso2-cd/templates/kube-conf.yaml << "EOF"
 # Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -182,7 +230,7 @@ stringData:
         username: admin
 EOF
 
-cat > jenkins/templates/spinnaker-pipeline-creator.yaml << "EOF"
+cat > wso2-cd/templates/spinnaker-pipeline-creator.yaml << "EOF"
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -194,6 +242,15 @@ metadata:
 spec:
   template:
     spec:
+      initContainers:
+      # initContainer that waits for spinnaker gate API to be ready
+      - name: wait-for-spin-gate
+        image: aaquiff/spin
+        command: ["/bin/sh"]
+        args: ["-c", "until spin application list --gate-endpoint $SPINNAKER_API; do echo 'Request to spin-gate failed. Retrying in 5s'; sleep 5; done;"]
+        env:
+        - name: SPINNAKER_API
+          value: "http://spin-gate.{{ .Release.Namespace }}.svc.cluster.local:8084"
       containers:
       - name: spin
         image: aaquiff/spin
@@ -222,7 +279,6 @@ metadata:
 data:
   run.sh: |-
     cd spinnaker
-    until spin application list --gate-endpoint $SPINNAKER_API; do  echo "Retrying in 5s"; sleep 5; done;
     {{- range .Values.applications }}
     spin applications save spintest --file {{ .name }}.json --gate-endpoint $SPINNAKER_API && \
 
@@ -251,8 +307,6 @@ data:
       "trafficGuards": [],
       "user": "[anonymous]"
     }
-
-    {{- $imageName := printf "test" }}
 
   {{ .name }}-bake-artifacts.json: |-
     {
@@ -373,9 +427,9 @@ data:
               "namespace": "{{ .name }}-dev",
               "outputName": "dev",
               "overrides": {
-                  "imageCredentials.password": "{{ $root.Values.registry.password }}",
-                  "imageCredentials.registry": "{{ $root.Values.registry.address }}",
-                  "imageCredentials.username": "{{ $root.Values.registry.username }}"
+                  "password": "{{ $root.Values.registry.password }}",
+                  "registry": "{{ $root.Values.registry.address }}",
+                  "username": "{{ $root.Values.registry.username }}"
               },
               "refId": "1",
               "requisiteStageRefIds": [],
@@ -411,9 +465,9 @@ data:
               "namespace": "{{ .name }}-prod",
               "outputName": "prod",
               "overrides": {
-                  "imageCredentials.password": "{{ $root.Values.registry.password }}",
-                  "imageCredentials.registry": "{{ $root.Values.registry.registry }}",
-                  "imageCredentials.username": "{{ $root.Values.registry.username }}"
+                  "password": "{{ $root.Values.registry.password }}",
+                  "registry": "{{ $root.Values.registry.registry }}",
+                  "username": "{{ $root.Values.registry.username }}"
               },
               "refId": "3",
               "requisiteStageRefIds": [],
@@ -449,9 +503,9 @@ data:
               "namespace": "{{ .name }}-staging",
               "outputName": "staging",
               "overrides": {
-                  "imageCredentials.password": "{{ $root.Values.registry.password }}",
-                  "imageCredentials.registry": "{{ $root.Values.registry.address }}",
-                  "imageCredentials.username": "{{ $root.Values.registry.username }}"
+                  "password": "{{ $root.Values.registry.password }}",
+                  "registry": "{{ $root.Values.registry.address }}",
+                  "username": "{{ $root.Values.registry.username }}"
               },
               "refId": "8",
               "requisiteStageRefIds": [],
@@ -598,7 +652,7 @@ data:
                 {{- end }}
               ],
               "requisiteStageRefIds": [],
-              "skipExpressionEvaluation": false,
+              "skipExpressionEvaluation": true,
               "source": "artifact",
               "type": "deployManifest"
           },
@@ -710,7 +764,7 @@ data:
                 {{- end }}
               ],
               "requisiteStageRefIds": [],
-              "skipExpressionEvaluation": false,
+              "skipExpressionEvaluation": true,
               "source": "artifact",
               "type": "deployManifest"
           },
@@ -820,7 +874,7 @@ data:
             {{- end }}
           ],
           "requisiteStageRefIds": [],
-          "skipExpressionEvaluation": false,
+          "skipExpressionEvaluation": true,
           "source": "artifact",
           "type": "deployManifest"
         }
@@ -832,7 +886,7 @@ data:
   {{- end }}
 EOF
 
-cat > jenkins/templates/NOTES.txt << "EOF"
+cat > wso2-cd/templates/NOTES.txt << "EOF"
 1. You will need a port forwarding tunnel in order to access the Jenkins UI:
     export JENKINS_POD=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app=jenkins" -o jsonpath="{.items[0].metadata.name}")
     kubectl port-forward --namespace {{ .Release.Namespace }} $JENKINS_POD 8080
@@ -845,7 +899,7 @@ cat > jenkins/templates/NOTES.txt << "EOF"
     kubectl port-forward --namespace {{ .Release.Namespace }} $GATE_POD 8084
 EOF
 
-cat > jenkins/templates/jenkins-casc-conf.yaml << "EOF"
+cat > wso2-cd/templates/jenkins-casc-conf.yaml << "EOF"
 # Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -876,7 +930,17 @@ data:
                 scm:
                   git:
                     remote: "https://github.com/Aaquiff/jenkins-shared-lib"
+    credentials:
+      system:
+        domainCredentials:
+          - credentials:
+              - usernamePassword:
+                  scope: GLOBAL
+                  id: github_credentials
+                  username: ${GITHUB_USERNAME}
+                  password: ${GITHUB_PASSWORD}
     jenkins:
+      systemMessage: "WSO2 CI/CD Setup"
       securityRealm:
         local:
           allowsSignup: false
@@ -885,12 +949,14 @@ data:
               password: "{{ .Values.jenkins.password }}"
       authorizationStrategy: loggedInUsersCanDoAnything
     jobs:
-      {{- $namespace := .Release.Namespace -}}
+      {{- $namespace := .Release.Namespace }}
       {{- range .Values.applications }}
-      {{- $application := . -}}
+      {{- $application := . }}
+      - script: >
+          folder("{{ $application.name }}")
       {{- range $index, $image := .images }}
       - script: >
-          job("{{ $application.name }}-{{ $image.repository }}-image") {
+          job("{{ $application.name }}/{{ $image.repository }}-image") {
             description()
             logRotator(10)
             keepDependencies(false)
@@ -901,6 +967,7 @@ data:
                     remote {
                         name('docker-repo')
                         url('{{ $image.gitRepo }}')
+                        credentials('github_credentials')
                     }
                 }
             }
@@ -921,7 +988,7 @@ data:
             }
           }
       - script: >
-          job("{{ $application.name }}-{{ $image.repository }}-artifacts") {
+          job("{{ $application.name }}/{{ $image.repository }}-artifacts") {
             description()
             logRotator(10)
             keepDependencies(false)
@@ -932,6 +999,7 @@ data:
                     remote {
                         name('docker-repo')
                         url('{{ $image.gitRepo }}')
+                        credentials('github_credentials')
                     }
                 }
             }
@@ -949,7 +1017,7 @@ data:
           }
       {{- end }}
       - script: >
-          job("{{ .name }}-chart") {
+          job("{{ .name }}/chart") {
             description()
             logRotator(10)
             keepDependencies(false)
@@ -960,6 +1028,7 @@ data:
                     remote {
                         name('chart-repo')
                         url('{{ .chart.repo }}')
+                        credentials('github_credentials')
                     }
                 }
             }
@@ -970,19 +1039,20 @@ data:
               shell(
               """
               cat {{ .chart.name }}/values-dev.yaml | base64 >test
-              vd=`tr -d '\\n' < test`
+              VALUES_DEV_CONTENT=`tr -d '\\n' < test`
 
               cat {{ .chart.name }}/values-staging.yaml | base64 >test
-              vs=`tr -d '\\n' < test`
+              VALUES_STAGING_CONTENT=`tr -d '\\n' < test`
 
               cat {{ .chart.name }}/values-prod.yaml | base64 >test
-              vp=`tr -d '\\n' < test`
+              VALUES_PROD_CONTENT=`tr -d '\\n' < test`
 
-              chartname=`helm package {{ .chart.name }} | sed 's|Successfully packaged chart and saved it to: ||' | cut -d '/' -f 6`
-              cat \$chartname | base64 > test
-              message=`tr -d '\\n' < test`
+              CHART_PATH=`helm package {{ .chart.name }} | sed 's|Successfully packaged chart and saved it to: ||'`
+              CHART_NAME=`basename \$CHART_PATH`
+              cat \$CHART_NAME | base64 > test
+              CHART_CONTENT=`tr -d '\\n' < test`
 
-              curl -X POST --header "Content-Type: application/json" --request POST --data '{"artifacts": [ {"type": "embedded/base64","name": "'"\$chartname"'", "reference": "'"\$message"'" }, {"type": "embedded/base64","name": "values-dev.yaml","reference": "'"\$vd"'" }, {"type": "embedded/base64","name": "values-prod.yaml","reference": "'"\$vp"'" }, {"type": "embedded/base64","name": "values-staging.yaml","reference": "'"\$vs"'" } ]}' http://spin-gate.{{ $namespace }}.svc.cluster.local:8084/webhooks/webhook/chart
+              curl -X POST --header "Content-Type: application/json" --request POST --data '{"artifacts": [ {"type": "embedded/base64","name": "'"\$CHART_NAME"'", "reference": "'"\$CHART_CONTENT"'" }, {"type": "embedded/base64","name": "values-dev.yaml","reference": "'"\$VALUES_DEV_CONTENT"'" }, {"type": "embedded/base64","name": "values-prod.yaml","reference": "'"\$VALUES_PROD_CONTENT"'" }, {"type": "embedded/base64","name": "values-staging.yaml","reference": "'"\$VALUES_STAGING_CONTENT"'" } ]}' http://spin-gate.{{ $namespace }}.svc.cluster.local:8084/webhooks/webhook/chart
               """)
 
             }
@@ -990,12 +1060,12 @@ data:
       {{- end }}
 EOF
 
-cat > jenkins/templates/roles.yaml << "EOF"
+cat > wso2-cd/templates/roles.yaml << "EOF"
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: jenkins
-  namespace: jenkins
+  namespace: {{ .Release.Namespace }}
 automountServiceAccountToken: true
 
 ---
@@ -1011,10 +1081,45 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: jenkins
-  namespace: jenkins
+  namespace: {{ .Release.Namespace }}
 EOF
 
-cat > jenkins/templates/spinnaker-jenkins-job-configurator.yaml << "EOF"
+cat > wso2-cd/templates/secrets.yaml << "EOF"
+apiVersion: v1
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: registry-credentials-pod
+data:
+  username: {{ .Values.registry.username | b64enc }}
+  password: {{ .Values.registry.password | b64enc }}
+  server: {{ .Values.registry.server | b64enc }}
+  email: {{ .Values.registry.email | b64enc }}
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: github-credentials
+data:
+  username: {{ .Values.github.username | b64enc }}
+  password: {{ .Values.github.password | b64enc }}
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wso2-credentials
+type: Opaque
+data:
+  username: {{ .Values.wso2Username | b64enc }}
+  password: {{ .Values.wso2Password | b64enc }}
+EOF
+
+cat > wso2-cd/templates/spinnaker-jenkins-job-configurator.yaml << "EOF"
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -1219,18 +1324,7 @@ data:
     </project>
 EOF
 
-cat > jenkins/templates/wso2-credentials.yaml << "EOF"
-apiVersion: v1
-kind: Secret
-metadata:
-  name: wso2-credentials
-type: Opaque
-data:
-  username: {{ .Values.wso2Username | b64enc }}
-  password: {{ .Values.wso2Password | b64enc }}
-EOF
-
-cat > jenkins/templates/service.yaml << "EOF"
+cat > wso2-cd/templates/service.yaml << "EOF"
 apiVersion: v1
 kind: Service
 metadata:
@@ -1266,20 +1360,7 @@ spec:
           servicePort: 8080
 EOF
 
-cat > jenkins/templates/registry-credentials-pod.yaml << "EOF"
-apiVersion: v1
-kind: Secret
-metadata:
-  creationTimestamp: null
-  name: registry-credentials-pod
-data:
-  username: {{ .Values.registry.username | b64enc }}
-  password: {{ .Values.registry.password | b64enc }}
-  server: {{ .Values.registry.server | b64enc }}
-  email: {{ .Values.registry.email | b64enc }}
-EOF
-
-cat > jenkins/templates/_helpers.tpl << "EOF"
+cat > wso2-cd/templates/_helpers.tpl << "EOF"
 {{/* vim: set filetype=mustache: */}}
 {{/*
 Expand the name of the chart.
@@ -1314,7 +1395,7 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 EOF
 
-cat > jenkins/templates/volumes.yaml << "EOF"
+cat > wso2-cd/templates/volumes.yaml << "EOF"
 # kind: PersistentVolume
 # apiVersion: v1
 # metadata:
@@ -1361,11 +1442,11 @@ spec:
       storage: 10Gi
 EOF
 
-cat > jenkins/values.yaml << "EOF"
+cat > wso2-cd/values.yaml << "EOF"
 namespace: jenkins
 image: 'aaquiff/jenkins-docker-kube:latest'
-wso2Username: <WSO2_USERNAME>
-wso2Password: <WSO2_PASSWORD>
+wso2Username: <WSO2_SUBSCRIPTION_USERNAME>
+wso2Password: <WSO2_SUBSCRIPTION_PASSWORD>
 
 # Admin credentials of jenkins instance to be created
 jenkins:
@@ -1379,20 +1460,24 @@ registry:
   email: <REGISTRY_EMAIL>
   address: index.docker.io
 
-applications:
-  - name: wso2ei
-    email: <WSO2_USERNAME>
-    testScript:
-      path: tests
-      command: test.sh
-    chart:
-      name: scalable-integrator
-      repo: 'https://github.com/Aaquiff/ei-cd'
-    images:
-      - wso2Image: 'docker.wso2.com/wso2ei-integrator:6.4.0'
-        organization: aaquiff
-        repository: wso2ei-6.4.0
-        gitRepo: 'https://github.com/Aaquiff/docker-ei'
+github:
+  username: <GITHUB_USERNAME>
+  password: <GITHUB_PASSWORD>
+
+# applications:
+#   - name: wso2ei
+#     email: <WSO2_USERNAME>
+#     testScript:
+#       path: tests
+#       command: test.sh
+#     chart:
+#       name: scalable-integrator
+#       repo: 'https://github.com/Aaquiff/ei-cd'
+#     images:
+#       - wso2Image: 'docker.wso2.com/wso2ei-integrator:6.4.0'
+#         organization: aaquiff
+#         repository: wso2ei-6.4.0
+#         gitRepo: 'https://github.com/Aaquiff/docker-ei'
 
 # Values for Spinnaker chart
 spinnaker:
@@ -1403,8 +1488,7 @@ spinnaker:
       password: <REGISTRY_PASSWORD>
       email: <REGISTRY_EMAIL>
       repositories:
-        - aaquiff/wso2ei-6.4.0
-        - aaquiff/wso2ei-integrator
+        <REPOSITORIES>
   halyard:
     spinnakerVersion: 1.13.8
     image:
@@ -1443,7 +1527,7 @@ spinnaker:
          - domain.com
 EOF
 
-cat > jenkins/requirements.lock << "EOF"
+cat > wso2-cd/requirements.lock << "EOF"
 dependencies:
 - name: spinnaker
   repository: https://kubernetes-charts.storage.googleapis.com
@@ -1455,23 +1539,126 @@ digest: sha256:ea49ffa93decf53b549e6886529bac7204825a85371584801e6ee28d110973b4
 generated: 2019-05-28T15:29:33.797757+05:30
 EOF
 
-
-cd jenkins
+cat > app.yaml << "EOF"
+applications:
+  - name: APP_NAME
+    email: EMAIL
+    testScript:
+      path: TEST_PATH
+      command: TEST_COMMAND
+    chart:
+      name: CHART_NAME
+      repo: 'CHART_REPO'
+    images:
+      - wso2Image: 'WSO2_IMAGE'
+        organization: ORGANIZATION
+        repository: REPOSITORY
+        gitRepo: 'GIT_REPO'
+EOF
 
 replaceTag() {
-    sed -i '' "s|$1|$2|" values.yaml
+    sed -i '' "s|$1|$2|" wso2-cd/values.yaml
 }
 
-replaceTag "<WSO2_USERNAME>" "$WSO2_USERNAME"
-replaceTag "<WSO2_PASSWORD>" "$WSO2_PASSWORD"
+if [ "$1" != "" ]; then
+  WSO2_SUBSCRIPTION_USERNAME=$1
+  WSO2_SUBSCRIPTION_PASSWORD=$2
+  REGISTRY_USERNAME=$3
+  REGISTRY_PASSWORD=$4
+  REGISTRY_EMAIL=$5
+  JENKINS_USERNAME=$6
+  JENKINS_PASSWORD=$7
+  GITHUB_USERNAME=$8
+  GITHUB_PASSWORD=$9
+else
+  print_notice "WSO2 Subscription credentials"
+  read -p "Enter Your WSO2 Username: " WSO2_SUBSCRIPTION_USERNAME
+  read -s -p "Enter Your WSO2 Password: " WSO2_SUBSCRIPTION_PASSWORD
+  ${ECHO}
+  print_notice "Docker registry credentials"
+
+  read -p "Enter Your Registry Username: " REGISTRY_USERNAME
+  read -s -p "Enter Your Registry Password: " REGISTRY_PASSWORD
+  ${ECHO}
+  read -p "Enter Your Registry Email: " REGISTRY_EMAIL
+
+  print_notice "Jenkins credentials for the admin user to be created."
+  read -p "Enter Your Jenkins username: " JENKINS_USERNAME
+  read -s -p "Enter Your Jenkins password: " JENKINS_PASSWORD
+  ${ECHO}
+
+  print_notice "Github credentials are required to access the repositories used in the setup"
+  read -p "Enter Your Github username: " GITHUB_USERNAME
+  read -s -p "Enter Your Github password: " GITHUB_PASSWORD
+  ${ECHO}
+fi
+
+replaceTag "<WSO2_SUBSCRIPTION_USERNAME>" "$WSO2_SUBSCRIPTION_USERNAME"
+replaceTag "<WSO2_SUBSCRIPTION_PASSWORD>" "$WSO2_SUBSCRIPTION_PASSWORD"
 replaceTag "<REGISTRY_USERNAME>" "$REGISTRY_USERNAME"
 replaceTag "<REGISTRY_PASSWORD>" "$REGISTRY_PASSWORD"
 replaceTag "<REGISTRY_EMAIL>" "$REGISTRY_EMAIL"
 replaceTag "<JENKINS_USERNAME>" "$JENKINS_USERNAME"
 replaceTag "<JENKINS_PASSWORD>" "$JENKINS_PASSWORD"
+replaceTag "<GITHUB_USERNAME>" "$GITHUB_USERNAME"
+replaceTag "<GITHUB_PASSWORD>" "$GITHUB_PASSWORD"
 
+print_notice "Jenkins and spinnaker pipelines could also be preconfigured."
+read -p "Do you want to create pipelines for an application?(N/y)" -n 1 -r
+${ECHO}
+
+if [[ ${REPLY} =~ ^[Yy]$ ]]; then
+
+  read -p "Uniqe name for you application: " APP_NAME
+
+  read -p "Url for the git repo containing the chart: " CHART_REPO
+  read -p "Name of the chart (folder with same name should be present at the root of the repository): " CHART_NAME
+  
+  read -p "Path to the test script within the git repository(excluding the filename): " TEST_PATH
+  read -p "Test file name at the given path : " TEST_COMMAND
+
+  read -p "WSO2 image: " WSO2_IMAGE
+  read -p "Docker organization: " ORGANIZATION
+  read -p "Docker repository: " REPOSITORY
+  read -p "Git repository containing the docker resources: " GIT_REPO
+
+  function replaceValues() {
+      sed "s|$1|$2|"
+  }
+
+  echo "" >> wso2-cd/values.yaml
+  cat app.yaml | 
+  replaceValues APP_NAME $APP_NAME |
+  replaceValues TEST_PATH $TEST_PATH |
+  replaceValues TEST_COMMAND $TEST_COMMAND |
+  replaceValues CHART_NAME $CHART_NAME |
+  replaceValues CHART_REPO $CHART_REPO |
+  replaceValues WSO2_IMAGE $WSO2_IMAGE |
+  replaceValues ORGANIZATION $ORGANIZATION |
+  replaceValues REPOSITORY $REPOSITORY |
+  replaceValues GIT_REPO $GIT_REPO |
+  replaceValues EMAIL $WSO2_SUBSCRIPTION_USERNAME >> wso2-cd/values.yaml
+
+  DATA="- $ORGANIZATION/$REPOSITORY"
+  cat wso2-cd/values.yaml | sed "s|<REPOSITORIES>|${DATA}<REPOSITORIES>|" |
+  sed 's|<REPOSITORIES>|\
+          <REPOSITORIES>|g' > wso2-cd/values2.yaml
+  rm wso2-cd/values.yaml
+  mv wso2-cd/values2.yaml wso2-cd/values.yaml
+
+fi
+
+replaceTag "<REPOSITORIES>" ""
+
+print_notice "wso2-cd/values.yaml created"
+
+cd wso2-cd
+
+
+print_notice "Building chart dependencies..."
 helm dependency build
-helm dependency update
 
-# helm upgrade jenkins . -f values.yaml --install --namespace jenkins
+print_notice "Deploying the helm chart..."
+# helm upgrade wso2-cd . -f values.yaml --install --namespace wso2-cd
 
+print_notice "WSO2 CI/CD chart generated and deployed. Further changes could be made by upgrading the helm deployment."

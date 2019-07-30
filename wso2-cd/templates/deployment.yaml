@@ -53,6 +53,16 @@ spec:
             secretKeyRef:
               name: registry-credentials-pod
               key: password
+        - name: GITHUB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: github-credentials
+              key: username
+        - name: GITHUB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: github-credentials
+              key: password
         - name: CASC_JENKINS_CONFIG
           value: "/var/casc_configs"
         imagePullPolicy: Always
@@ -63,7 +73,7 @@ spec:
             port: 8080
         livenessProbe:
           periodSeconds: 10
-          initialDelaySeconds: 30
+          initialDelaySeconds: 300
           httpGet:
             path: "/login"
             port: 8080
@@ -97,8 +107,5 @@ spec:
       - name: jenkins-casc-conf
         configMap:
           name: jenkins-casc-conf
-      - name: registry-credentials-pod
-        secret:
-          secretName: registry-credentials-pod
       - name: helm-conf
         emptyDir: {}

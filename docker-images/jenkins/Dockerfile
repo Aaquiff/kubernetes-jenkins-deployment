@@ -24,11 +24,6 @@ RUN kdig
 RUN apt-get install maven -y
 RUN mvn -v
 
-# Install wum
-RUN wget https://product-dist.wso2.com/downloads/wum/3.0.2/wum-3.0.2-linux-x64.tar.gz
-RUN tar -C /usr/local -xzf wum-3.0.2-linux-x64.tar.gz
-RUN cp usr/local/wum/bin/wum usr/local/bin
-
 # Install helm
 RUN curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > get_helm.sh
 RUN chmod 700 get_helm.sh
@@ -44,6 +39,4 @@ RUN gpasswd -a jenkins dsock
 
 RUN usermod -aG sudo jenkins
 
-COPY wumupdate /usr/local/bin/
-RUN chmod 777 /usr/local/bin/wumupdate
 # USER JENKINS
