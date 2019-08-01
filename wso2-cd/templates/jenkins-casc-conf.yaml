@@ -110,7 +110,15 @@ data:
             steps {
               shell("""
                 TAG=`docker images {{ $image.organization }}/{{ $image.repository }} --format '{{ "{{ .Tag }}" }}' | sort -nrk1 | head -1`
-                sed -i "s|<BASE>|{{ $image.organization }}/{{ $image.repository }}:\$TAG|" Dockerfile
+                if [ -z "\$TAG" ]
+                then
+                  TAG=`date +\"%Y%m%d%H%M%S\"`
+                  sed -i "s|<BASE>|{{ $image.wso2Image }}|" Dockerfile
+                else
+                  sed -i "s|<BASE>|{{ $image.organization }}/{{ $image.repository }}:\$TAG|" Dockerfile
+                fi
+                #TAG=`docker images {{ $image.organization }}/{{ $image.repository }} --format '{{ "{{ .Tag }}" }}' | sort -nrk1 | head -1`
+                #sed -i "s|<BASE>|{{ $image.organization }}/{{ $image.repository }}:\$TAG|" Dockerfile
                 docker build -t {{ $image.organization }}/{{ $image.repository }}:\$TAG .
                 docker login -u \$REGISTRY_USERNAME -p \$REGISTRY_PASSWORD
                 docker push {{ $image.organization }}/{{ $image.repository }}:\$TAG""")
