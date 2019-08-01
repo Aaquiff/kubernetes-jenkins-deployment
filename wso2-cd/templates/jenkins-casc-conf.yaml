@@ -149,7 +149,7 @@ data:
               VALUES_PROD_CONTENT=`tr -d '\\n' < test`
 
               rm {{ .chart.name }}-*.tgz || ls
-              helm package {{ .chart.name }}
+              helm package {{ .chart.name }} -u
 
               CHART_NAME=`find {{ .chart.name }}-*.tgz`
               cat \$CHART_NAME | base64 > test
