@@ -78,6 +78,9 @@ data:
                   date +\"%Y%m%d%H%M%S\"
                 }
 
+                # Set WSO2 Base Image
+                sed -i "s|<BASE>|{{ $image.wso2Image }}|" Dockerfile
+
                 IMAGE_NAME={{ $image.organization }}/{{ $image.repository }}:`timestamp`
                 docker login docker.wso2.com -u \$WSO2_USERNAME -p \$WSO2_PASSWORD
                 docker build -t \$IMAGE_NAME .
@@ -107,7 +110,7 @@ data:
             steps {
               shell("""
                 TAG=`docker images {{ $image.organization }}/{{ $image.repository }} --format '{{ "{{ .Tag }}" }}' | sort -nrk1 | head -1`
-                sed -i "s|{{ $image.wso2Image }}|{{ $image.organization }}/{{ $image.repository }}:\$TAG|" Dockerfile
+                sed -i "s|<BASE>|{{ $image.organization }}/{{ $image.repository }}:\$TAG|" Dockerfile
                 docker build -t {{ $image.organization }}/{{ $image.repository }}:\$TAG .
                 docker login -u \$REGISTRY_USERNAME -p \$REGISTRY_PASSWORD
                 docker push {{ $image.organization }}/{{ $image.repository }}:\$TAG""")
@@ -145,8 +148,10 @@ data:
               cat {{ .chart.name }}/values-prod.yaml | base64 >test
               VALUES_PROD_CONTENT=`tr -d '\\n' < test`
 
-              CHART_PATH=`helm package {{ .chart.name }} | sed 's|Successfully packaged chart and saved it to: ||'`
-              CHART_NAME=`basename \$CHART_PATH`
+              rm {{ .chart.name }}-*.tgz || ls
+              helm package {{ .chart.name }}
+
+              CHART_NAME=`find {{ .chart.name }}-*.tgz`
               cat \$CHART_NAME | base64 > test
               CHART_CONTENT=`tr -d '\\n' < test`
 
