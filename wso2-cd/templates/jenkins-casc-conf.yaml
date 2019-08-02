@@ -163,7 +163,9 @@ data:
               cat \$CHART_NAME | base64 > test
               CHART_CONTENT=`tr -d '\\n' < test`
 
-              curl -X POST --header "Content-Type: application/json" --request POST --data '{"artifacts": [ {"type": "embedded/base64","name": "'"\$CHART_NAME"'", "reference": "'"\$CHART_CONTENT"'" }, {"type": "embedded/base64","name": "values-dev.yaml","reference": "'"\$VALUES_DEV_CONTENT"'" }, {"type": "embedded/base64","name": "values-prod.yaml","reference": "'"\$VALUES_PROD_CONTENT"'" }, {"type": "embedded/base64","name": "values-staging.yaml","reference": "'"\$VALUES_STAGING_CONTENT"'" } ]}' http://spin-gate.{{ $namespace }}.svc.cluster.local:8084/webhooks/webhook/chart
+              echo '{"artifacts": [ {"type": "embedded/base64","name": "'"\$CHART_NAME"'", "reference": "'"\$CHART_CONTENT"'" }, {"type": "embedded/base64","name": "values-dev.yaml","reference": "'"\$VALUES_DEV_CONTENT"'" }, {"type": "embedded/base64","name": "values-prod.yaml","reference": "'"\$VALUES_PROD_CONTENT"'" }, {"type": "embedded/base64","name": "values-staging.yaml","reference": "'"\$VALUES_STAGING_CONTENT"'" } ]}' > data.json
+
+              curl -X POST --header "Content-Type: application/json" --request POST --data @data.json http://spin-gate.{{ $namespace }}.svc.cluster.local:8084/webhooks/webhook/chart
               """)
 
             }
