@@ -1,1 +1,6 @@
-jenkins/values-edited.yaml
+#charts
+wso2-cd/charts
+wso2-cd/values-edited.yaml
+wso2-cd/requirements.lock
+test.sh
+temp
