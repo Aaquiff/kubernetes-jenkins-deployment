@@ -20,19 +20,19 @@ github:
   password: <GITHUB_PASSWORD>
 
 # applications:
-#   - name: wso2ei
+#   - name: 
 #     email: <WSO2_USERNAME>
 #     testScript:
 #       path: tests
 #       command: test.sh
 #     chart:
-#       name: scalable-integrator
-#       repo: 'https://github.com/Aaquiff/ei-cd'
+#       name: 
+#       repo: 
 #     images:
-#       - wso2Image: 'docker.wso2.com/wso2ei-integrator:6.4.0'
-#         organization: aaquiff
-#         repository: wso2ei-6.4.0
-#         gitRepo: 'https://github.com/Aaquiff/docker-ei'
+#       - wso2Image:
+#         organization:
+#         repository:
+#         gitRepo:
 
 # Values for Spinnaker chart
 spinnaker:
