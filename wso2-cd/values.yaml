@@ -2,6 +2,7 @@ namespace: jenkins
 image: 'aaquiff/jenkins-docker-kube:latest'
 wso2Username: <WSO2_SUBSCRIPTION_USERNAME>
 wso2Password: <WSO2_SUBSCRIPTION_PASSWORD>
+storageClass: ""
 
 # Admin credentials of jenkins instance to be created
 jenkins:
@@ -26,6 +27,7 @@ github:
 #       path: tests
 #       command: test.sh
 #     chart:
+#       customChart: true
 #       name: 
 #       repo: 
 #     images:

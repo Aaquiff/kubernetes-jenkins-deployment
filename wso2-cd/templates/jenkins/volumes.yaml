@@ -1,18 +1,36 @@
-# kind: PersistentVolume
-# apiVersion: v1
-# metadata:
-#   name: jenkins
-#   labels:
-#     type: local
-# spec:
-#   capacity:
-#     storage: 2Gi
-#   accessModes:
-#     - ReadWriteOnce
-#   hostPath:
-#     path: "/data/jenkins/"
+{{- if eq .Values.storageClass ""}}
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: jenkins
+  labels:
+    purpose: jenkins-shared-deployment
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/jenkins/"
 
 ---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jenkins-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: ""
+  selector:
+    matchLabels:
+      purpose: jenkins-shared-deployment
+
+{{- else }}
 
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -24,6 +42,9 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+  storageClass: {{ .Values.storageClass }}
   resources:
     requests:
       storage: 10Gi
+
+{{- end }}
