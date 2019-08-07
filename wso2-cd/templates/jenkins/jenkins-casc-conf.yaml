@@ -157,7 +157,12 @@ data:
               VALUES_PROD_CONTENT=`tr -d '\\n' < test`
 
               rm {{ .chart.name }}-*.tgz || ls
+
+              {{- if $application.chart.customChart }}
               helm package {{ .chart.name }} -u
+              {{- else }}
+              helm fetch wso2/is
+              {{- end }}
 
               CHART_NAME=`find {{ .chart.name }}-*.tgz`
               cat \$CHART_NAME | base64 > test
