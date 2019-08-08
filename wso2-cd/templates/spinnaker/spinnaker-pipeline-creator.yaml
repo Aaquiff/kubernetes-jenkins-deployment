@@ -418,7 +418,9 @@ data:
                 {{if ne $index 0}},{{end}}"{{- $index}}"
                 {{- end }}
               ],
-              "requisiteStageRefIds": [],
+              "requisiteStageRefIds": [
+                  "8"
+              ],
               "skipExpressionEvaluation": true,
               "source": "artifact",
               "type": "deployManifest"
@@ -445,6 +447,36 @@ data:
               ],
               "type": "pipeline",
               "waitForCompletion": true
+          },
+          {
+            "account": "default",
+            "cloudProvider": "kubernetes",
+            "isNew": true,
+            "manifest": null,
+            "manifestArtifactAccount": "kubernetes",
+            "manifests": [
+                {
+                "apiVersion": "v1",
+                "kind": "Namespace",
+                "metadata": {
+                    "name": "{{ .name }}-dev"
+                }
+                }
+            ],
+            "moniker": {
+                "app": "{{ .name }}"
+            },
+            "name": "Deploy Namespace (Manifest)",
+            "refId": "8",
+            "relationships": {
+                "loadBalancers": [],
+                "securityGroups": []
+            },
+            "requisiteStageRefIds": [],
+            "skipExpressionEvaluation": false,
+            "source": "text",
+            "type": "deployManifest",
+            "versioned": null
           }
       ],
       "triggers": [],
@@ -512,6 +544,36 @@ data:
       "limitConcurrent": true,
       "stages": [
           {
+            "account": "default",
+            "cloudProvider": "kubernetes",
+            "isNew": true,
+            "manifest": null,
+            "manifestArtifactAccount": "kubernetes",
+            "manifests": [
+                {
+                "apiVersion": "v1",
+                "kind": "Namespace",
+                "metadata": {
+                    "name": "{{ .name }}-staging"
+                }
+                }
+            ],
+            "moniker": {
+                "app": "{{ .name }}"
+            },
+            "name": "Deploy Namespace (Manifest)",
+            "refId": "8",
+            "relationships": {
+                "loadBalancers": [],
+                "securityGroups": []
+            },
+            "requisiteStageRefIds": [],
+            "skipExpressionEvaluation": false,
+            "source": "text",
+            "type": "deployManifest",
+            "versioned": null
+          },
+          {
               "account": "default",
               "cloudProvider": "kubernetes",
               "manifestArtifactAccount": "embedded-artifact",
@@ -530,7 +592,9 @@ data:
                 {{if ne $index 0}},{{end}}"{{- $index}}"
                 {{- end }}
               ],
-              "requisiteStageRefIds": [],
+              "requisiteStageRefIds": [
+                  "8"
+              ],
               "skipExpressionEvaluation": true,
               "source": "artifact",
               "type": "deployManifest"
@@ -622,6 +686,36 @@ data:
       "limitConcurrent": true,
       "stages": [
         {
+            "account": "default",
+            "cloudProvider": "kubernetes",
+            "isNew": true,
+            "manifest": null,
+            "manifestArtifactAccount": "kubernetes",
+            "manifests": [
+                {
+                "apiVersion": "v1",
+                "kind": "Namespace",
+                "metadata": {
+                    "name": "{{ .name }}-prod"
+                }
+                }
+            ],
+            "moniker": {
+                "app": "{{ .name }}"
+            },
+            "name": "Deploy Namespace (Manifest)",
+            "refId": "8",
+            "relationships": {
+                "loadBalancers": [],
+                "securityGroups": []
+            },
+            "requisiteStageRefIds": [],
+            "skipExpressionEvaluation": false,
+            "source": "text",
+            "type": "deployManifest",
+            "versioned": null
+          },
+        {
           "account": "default",
           "cloudProvider": "kubernetes",
           "manifestArtifactAccount": "embedded-artifact",
@@ -640,7 +734,9 @@ data:
             {{if ne $index 0}},{{end}}"{{- $index}}"
             {{- end }}
           ],
-          "requisiteStageRefIds": [],
+          "requisiteStageRefIds": [
+              "8"
+          ],
           "skipExpressionEvaluation": true,
           "source": "artifact",
           "type": "deployManifest"

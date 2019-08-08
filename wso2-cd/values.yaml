@@ -26,6 +26,7 @@ github:
 #       path: tests
 #       command: test.sh
 #     chart:
+#       customChart: true
 #       name: 
 #       repo: 
 #     images:
