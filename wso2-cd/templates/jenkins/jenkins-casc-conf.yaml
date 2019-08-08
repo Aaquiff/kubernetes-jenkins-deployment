@@ -190,10 +190,10 @@ data:
 
               rm {{ .chart.name }}-*.tgz || ls
 
-              {{- if $application.chart.customChart }}
+              {{- if .chart.customChart }}
               helm package {{ .chart.name }} -u
               {{- else }}
-              helm fetch wso2/is
+              helm fetch wso2/{{ .chart.name }} --version {{ .chart.version }}
               {{- end }}
 
               tar -zxf {{ .chart.name }}-*.tgz
