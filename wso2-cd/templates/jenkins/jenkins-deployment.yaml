@@ -18,12 +18,10 @@ spec:
       - image: alpine/helm:2.14.0
         name: helm-config
         command: ["/bin/sh"]
-        args: ["-c", "helm init --client-only; helm repo remove local; helm repo add wso2 https://ec2-52-221-188-218.ap-southeast-1.compute.amazonaws.com --ca-file /root/repository/apache-selfsigned.crt; helm repo update"]
+        args: ["-c", "helm init --client-only; helm repo remove local; helm repo add wso2 https://helm.wso2.com; helm repo update"]
         volumeMounts:
         - name: helm-conf
           mountPath: "/root/.helm"
-        - name: jenkins-helm-repositories-conf
-          mountPath: "/root/repository"
       containers:
       - image: {{ .Values.image }}
         name: jenkins
@@ -92,8 +90,6 @@ spec:
           mountPath: /var/casc_configs
         - name: helm-conf
           mountPath: "/root/.helm"
-        - name: jenkins-helm-repositories-conf
-          mountPath: "/root/repository"
         ports:
         - containerPort: 8080
           name: jenkins
@@ -113,6 +109,3 @@ spec:
           name: jenkins-casc-conf
       - name: helm-conf
         emptyDir: {}
-      - name: jenkins-helm-repositories-conf
-        configMap:
-          name: jenkins-helm-repositories-conf
