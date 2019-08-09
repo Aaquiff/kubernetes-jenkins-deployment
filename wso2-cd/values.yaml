@@ -82,3 +82,9 @@ spinnaker:
        hosts:
          - domain.com
 
+elastic-stack:
+  kibana:
+    ingress:
+      enabled: true
+      hosts:
+        - kibana
