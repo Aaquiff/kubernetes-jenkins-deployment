@@ -18,7 +18,7 @@ spec:
       - image: alpine/helm:2.14.0
         name: helm-config
         command: ["/bin/sh"]
-        args: ["-c", "helm init --client-only; helm repo remove local"]
+        args: ["-c", "helm init --client-only; helm repo remove local; helm repo add wso2 https://helm.wso2.com; helm repo update"]
         volumeMounts:
         - name: helm-conf
           mountPath: "/root/.helm"
