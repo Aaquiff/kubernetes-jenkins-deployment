@@ -71,8 +71,10 @@
 #     {{- range .Values.applications }}
 #     {{- $application := . }}
 #     {{- range $image := .images }}
-#         docker pull {{ $image.wso2Image }}
-#         docker tag {{ $image.wso2Image }} {{ $image.organization }}/{{ $image.repository }}
+#         {{- if $image.customImage }}
+#         docker pull {{ $image.customImage.baseImage }}
+#         docker tag {{ $image.customImage.baseImage }} {{ $image.organization }}/{{ $image.repository }}
 #         docker push {{ $image.organization }}/{{ $image.repository }}
+#         {{- end }}
 #     {{- end}}
 #     {{- end}}
