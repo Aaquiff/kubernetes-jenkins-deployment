@@ -53,7 +53,9 @@ data:
       - script: >
           folder("{{ $application.name }}")
       {{- range $index, $image := .images }}
+      {{- if $image.customImage }}
       - script: >
+          
           job("{{ $application.name }}/{{ $image.repository }}-image") {
             description()
             logRotator(10)
@@ -64,7 +66,7 @@ data:
                 git {
                     remote {
                         name('docker-repo')
-                        url('{{ $image.gitRepo }}')
+                        url('{{ $image.customImage.dockerfileGitRepo }}')
                         credentials('github_credentials')
                     }
                 }
@@ -79,7 +81,7 @@ data:
                 }
 
                 # Set WSO2 Base Image
-                sed -i "s|<BASE>|{{ $image.wso2Image }}|" Dockerfile
+                sed -i "s|<BASE>|{{ $image.customImage.baseImage }}|" Dockerfile
 
                 IMAGE_NAME={{ $image.organization }}/{{ $image.repository }}:`timestamp`
                 docker login docker.wso2.com -u \$WSO2_USERNAME -p \$WSO2_PASSWORD
@@ -99,7 +101,7 @@ data:
                 git {
                     remote {
                         name('docker-repo')
-                        url('{{ $image.gitRepo }}')
+                        url('{{ $image.customImage.dockerfileGitRepo }}')
                         credentials('github_credentials')
                     }
                 }
@@ -113,7 +115,7 @@ data:
                 if [ -z "\$TAG" ]
                 then
                   TAG=`date +\"%Y%m%d%H%M%S\"`
-                  sed -i "s|<BASE>|{{ $image.wso2Image }}|" Dockerfile
+                  sed -i "s|<BASE>|{{ $image.customImage.baseImage }}|" Dockerfile
                 else
                   sed -i "s|<BASE>|{{ $image.organization }}/{{ $image.repository }}:\$TAG|" Dockerfile
                 fi
@@ -124,6 +126,7 @@ data:
                 docker push {{ $image.organization }}/{{ $image.repository }}:\$TAG""")
             }
           }
+      {{- end }}
       {{- end }}
       - script: >
           job("{{ .name }}/chart") {
@@ -197,9 +200,11 @@ data:
               {{- end }}
 
               tar -zxf {{ .chart.name }}-*.tgz
+              if [ -d {{ .chart.name }}/charts ]; then
               cd {{ .chart.name }}/charts
               removeTests
               cd ../../
+              fi
               helm package {{ .chart.name }}
 
               CHART_NAME=`find {{ .chart.name }}-*.tgz`
