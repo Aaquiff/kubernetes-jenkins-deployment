@@ -5,8 +5,8 @@ wso2Password: <WSO2_SUBSCRIPTION_PASSWORD>
 
 # Admin credentials of jenkins instance to be created
 jenkins:
-  username: <JENKINS_USERNAME>
-  password: <JENKINS_PASSWORD>
+  username: admin
+  password: admin
 
 registry:
   server: 'https://index.docker.io/v1/'
@@ -19,21 +19,24 @@ github:
   username: <GITHUB_USERNAME>
   password: <GITHUB_PASSWORD>
 
-# applications:
-#   - name: 
-#     email: <WSO2_USERNAME>
-#     testScript:
-#       path: tests
-#       command: test.sh
-#     chart:
-#       customChart: true
-#       name: 
-#       repo: 
-#     images:
-#       - wso2Image:
-#         organization:
-#         repository:
-#         gitRepo:
+applications:
+  - name: wso2is
+    email: <EMAIL>
+    testScript:
+      path: tests
+      command: test.sh
+    chart:
+      customChart: false
+      name: is-pattern-1
+      version: 5.8.0-1
+      repo: 'https://github.com/wso2/sample-is-chart'
+    images:
+      - organization: aaquiff
+        repository: wso2is
+        # customImage:
+        #   baseImage: 'docker.wso2.com/wso2is:5.8.0'
+        #   dockerfileGitRepo: 'https://github.com/Aaquiff/docker-is'
+
 
 # Values for Spinnaker chart
 spinnaker:
@@ -44,7 +47,8 @@ spinnaker:
       password: <REGISTRY_PASSWORD>
       email: <REGISTRY_EMAIL>
       repositories:
-        <REPOSITORIES>
+        - aaquiff/wso2is
+        - aaquiff/wso2ei
   halyard:
     spinnakerVersion: 1.13.8
     image:
@@ -54,8 +58,8 @@ spinnaker:
       data:
         enable_ci.sh: |-
           echo "Configuring jenkins master"
-          USERNAME="<JENKINS_USERNAME>"
-          PASSWORD="<JENKINS_PASSWORD>"
+          USERNAME="admin"
+          PASSWORD="admin"
           $HAL_COMMAND config ci jenkins enable
           echo $PASSWORD | $HAL_COMMAND config ci jenkins master edit master --address http://jenkins-service.jenkins.svc.cluster.local:8080 --username $USERNAME --password || echo $PASSWORD | $HAL_COMMAND config ci jenkins master add master --address http://jenkins-service.jenkins.svc.cluster.local:8080 --username $USERNAME --password
           $HAL_COMMAND config features edit --pipeline-templates true
@@ -88,3 +92,62 @@ elastic-stack:
       enabled: true
       hosts:
         - kibana
+
+
+prometheus-operator:
+  # remove parent chart name from this one
+  fullnameOverride: prometheus-operator
+  fullname: prometheus-operator
+  # Kube-scheduler on gke
+  kubeScheduler:
+    enabled: false
+
+  # Controller Manager on gke
+  kubeControllerManager:
+    enabled: false
+
+  # kubeDNS instead of coreDns on gke
+  kubeDns:
+    enabled: true
+  coreDns:
+    enabled: false
+
+  # etcd on gke
+  kubeEtcd:
+    enabled: false
+
+  grafana:
+    ingress:
+      enabled: true
+      annotations: 
+        kubernetes.io/ingress.class: nginx
+      hosts:
+        - grafana
+
+  defaultRules:
+    create: true
+    rules:
+      alertmanager: false
+      etcd: false
+      general: false
+      k8s: false
+      kubeApiserver: false
+      kubePrometheusNodeAlerting: false
+      kubePrometheusNodeRecording: false
+      kubernetesAbsent: false
+      kubernetesApps: false
+      kubernetesResources: false
+      kubernetesStorage: false
+      kubernetesSystem: false
+      kubeScheduler: false
+      network: false
+      node: false
+      prometheus: false
+      prometheusOperator: false
+      time: false
+
+    ## Labels for default rules
+    labels: 
+      app: helm
+    ## Annotations for default rules
+    annotations: {}
