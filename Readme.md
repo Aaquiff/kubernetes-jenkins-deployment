@@ -20,7 +20,12 @@ Each environment would have a corresponding Spinnaker pipeline (dev, staging, pr
 
 ### Prerequisites
 
-1. Create repositories in Dockerhub for image(s).
+1. Create repositories in Dockerhub for image(s) and push an initial image with the tag `latest`.
+    ```shell
+    docker pull docker.wso2.com/wso2is:5.8.0
+    docker tag docker.wso2.com/wso2is:5.8.0 <DOCKER_ORGANIZATION>/wso2is
+    docker push <DOCKER_ORGANIZATION>/wso2is
+    ```
 2. Create git repo(s) with the Dockerfiles to build each image. The Dockerfiles should contain the following line.
     ```Dockerfile
     FROM <BASE>
