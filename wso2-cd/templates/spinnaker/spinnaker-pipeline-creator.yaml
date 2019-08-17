@@ -196,9 +196,9 @@ data:
               "namespace": "{{ .name }}-dev",
               "outputName": "dev",
               "overrides": {
-                  "password": "{{ $root.Values.registry.password }}",
-                  "registry": "{{ $root.Values.registry.address }}",
-                  "username": "{{ $root.Values.registry.username }}",
+                  "wso2.dockerRegistry": "{{ $root.Values.registry.address }}",
+                  "wso2.subscription.username": "{{ $root.Values.registry.username }}",
+                  "wso2.subscription.password": "{{ $root.Values.registry.password }}",
                   "wso2.centralizedLogging.enabled": "true",
                   "wso2.centralizedLogging.logstash.elasticsearch.host": "{{ $release.Name }}-elasticsearch-client.{{ $release.Namespace }}.svc.cluster.local"
               },
@@ -236,9 +236,9 @@ data:
               "namespace": "{{ .name }}-prod",
               "outputName": "prod",
               "overrides": {
-                  "password": "{{ $root.Values.registry.password }}",
-                  "registry": "{{ $root.Values.registry.registry }}",
-                  "username": "{{ $root.Values.registry.username }}",
+                  "wso2.dockerRegistry": "{{ $root.Values.registry.address }}",
+                  "wso2.subscription.username": "{{ $root.Values.registry.username }}",
+                  "wso2.subscription.password": "{{ $root.Values.registry.password }}",
                   "wso2.centralizedLogging.enabled": "true",
                   "wso2.centralizedLogging.logstash.elasticsearch.host": "{{ $release.Name }}-elasticsearch-client.{{ $release.Namespace }}.svc.cluster.local"
               },
@@ -276,9 +276,9 @@ data:
               "namespace": "{{ .name }}-staging",
               "outputName": "staging",
               "overrides": {
-                  "password": "{{ $root.Values.registry.password }}",
-                  "registry": "{{ $root.Values.registry.address }}",
-                  "username": "{{ $root.Values.registry.username }}",
+                  "wso2.dockerRegistry": "{{ $root.Values.registry.address }}",
+                  "wso2.subscription.username": "{{ $root.Values.registry.username }}",
+                  "wso2.subscription.password": "{{ $root.Values.registry.password }}",
                   "wso2.centralizedLogging.enabled": "true",
                   "wso2.centralizedLogging.logstash.elasticsearch.host": "{{ $release.Name }}-elasticsearch-client.{{ $release.Namespace }}.svc.cluster.local"
               },
@@ -463,11 +463,32 @@ data:
             "manifest": null,
             "manifestArtifactAccount": "kubernetes",
             "manifests": [
+                {{- $namespace := printf "%s-%s" .name "dev"}}
                 {
                     "apiVersion": "v1",
                     "kind": "Namespace",
                     "metadata": {
-                        "name": "{{ .name }}-dev"
+                        "name": "{{ $namespace }}"
+                    }
+                },
+                {
+                    {{- $username := $root.Values.registry.username }}
+                    {{- $password := $root.Values.registry.password }}
+                    {{- $email := $root.Values.registry.email }}
+                    {{- $regId := $root.Values.registry.server }}
+                    {{- $auth := printf "%s:%s" $username $password | b64enc }}
+                    {{- $files := $root.Files }}
+                    "apiVersion": "v1",
+                    "kind": "Secret",
+                    "metadata": {
+                        "name": "regcred",
+                        "namespace" : "{{ $namespace }}"m
+                        "annotations": {
+                            "strategy.spinnaker.io/versioned": "false"
+                        }
+                    },
+                    "data": {
+                        ".dockerconfigjson": "{{ $files.Get "auth.json" | replace "reg.id" $regId | replace "reg.username" $username | replace "reg.password" $password | replace "reg.email" $email | replace "reg.auth" $auth | b64enc }}"
                     }
                 }
             ],
@@ -558,12 +579,33 @@ data:
             "manifest": null,
             "manifestArtifactAccount": "kubernetes",
             "manifests": [
+                {{- $namespace := printf "%s-%s" .name "staging"}}
                 {
-                "apiVersion": "v1",
-                "kind": "Namespace",
-                "metadata": {
-                    "name": "{{ .name }}-staging"
-                }
+                    "apiVersion": "v1",
+                    "kind": "Namespace",
+                    "metadata": {
+                        "name": "{{ $namespace }}"
+                    }
+                },
+                {
+                    {{- $username := $root.Values.registry.username }}
+                    {{- $password := $root.Values.registry.password }}
+                    {{- $email := $root.Values.registry.email }}
+                    {{- $regId := $root.Values.registry.server }}
+                    {{- $auth := printf "%s:%s" $username $password | b64enc }}
+                    {{- $files := $root.Files }}
+                    "apiVersion": "v1",
+                    "kind": "Secret",
+                    "metadata": {
+                        "name": "regcred",
+                        "namespace" : "{{ $namespace }}",
+                        "annotations": {
+                            "strategy.spinnaker.io/versioned": "false"
+                        }
+                    },
+                    "data": {
+                        ".dockerconfigjson": "{{ $files.Get "auth.json" | replace "reg.id" $regId | replace "reg.username" $username | replace "reg.password" $password | replace "reg.email" $email | replace "reg.auth" $auth | b64enc }}"
+                    }
                 }
             ],
             "moniker": {
@@ -700,12 +742,33 @@ data:
             "manifest": null,
             "manifestArtifactAccount": "kubernetes",
             "manifests": [
+                {{- $namespace := printf "%s-%s" .name "prod"}}
                 {
-                "apiVersion": "v1",
-                "kind": "Namespace",
-                "metadata": {
-                    "name": "{{ .name }}-prod"
-                }
+                    "apiVersion": "v1",
+                    "kind": "Namespace",
+                    "metadata": {
+                        "name": "{{ $namespace }}"
+                    }
+                },
+                {
+                    {{- $username := $root.Values.registry.username }}
+                    {{- $password := $root.Values.registry.password }}
+                    {{- $email := $root.Values.registry.email }}
+                    {{- $regId := $root.Values.registry.server }}
+                    {{- $auth := printf "%s:%s" $username $password | b64enc }}
+                    {{- $files := $root.Files }}
+                    "apiVersion": "v1",
+                    "kind": "Secret",
+                    "metadata": {
+                        "name": "regcred",
+                        "namespace" : "{{ $namespace }}",
+                        "annotations": {
+                            "strategy.spinnaker.io/versioned": "false"
+                        }
+                    },
+                    "data": {
+                        ".dockerconfigjson": "{{ $files.Get "auth.json" | replace "reg.id" $regId | replace "reg.username" $username | replace "reg.password" $password | replace "reg.email" $email | replace "reg.auth" $auth | b64enc }}"
+                    }
                 }
             ],
             "moniker": {

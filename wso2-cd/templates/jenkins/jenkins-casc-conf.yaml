@@ -196,6 +196,7 @@ data:
               {{- if .chart.customChart }}
               helm package {{ .chart.name }} -u
               {{- else }}
+              helm repo update
               helm fetch wso2/{{ .chart.name }} --version {{ .chart.version }}
               {{- end }}
 
