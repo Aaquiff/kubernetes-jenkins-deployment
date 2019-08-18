@@ -1,6 +1,6 @@
 #charts
-wso2-cd/charts
-wso2-cd/values-edited.yaml
-wso2-cd/requirements.lock
+wso2-kubernetes-pipeline/charts
+wso2-kubernetes-pipeline/values-edited.yaml
+wso2-kubernetes-pipeline/requirements.lock
 test.sh
 temp
