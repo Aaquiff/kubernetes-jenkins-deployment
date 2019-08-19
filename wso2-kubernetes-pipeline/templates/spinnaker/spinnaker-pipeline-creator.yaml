@@ -482,7 +482,7 @@ data:
                     "kind": "Secret",
                     "metadata": {
                         "name": "regcred",
-                        "namespace" : "{{ $namespace }}"m
+                        "namespace" : "{{ $namespace }}"
                         "annotations": {
                             "strategy.spinnaker.io/versioned": "false"
                         }
