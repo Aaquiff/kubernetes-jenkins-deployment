@@ -487,6 +487,7 @@ data:
                             "strategy.spinnaker.io/versioned": "false"
                         }
                     },
+                    "type" : "kubernetes.io/dockerconfigjson",
                     "data": {
                         ".dockerconfigjson": "{{ $files.Get "auth.json" | replace "reg.id" $regId | replace "reg.username" $username | replace "reg.password" $password | replace "reg.email" $email | replace "reg.auth" $auth | b64enc }}"
                     }
@@ -603,6 +604,7 @@ data:
                             "strategy.spinnaker.io/versioned": "false"
                         }
                     },
+                    "type" : "kubernetes.io/dockerconfigjson",
                     "data": {
                         ".dockerconfigjson": "{{ $files.Get "auth.json" | replace "reg.id" $regId | replace "reg.username" $username | replace "reg.password" $password | replace "reg.email" $email | replace "reg.auth" $auth | b64enc }}"
                     }
@@ -766,6 +768,7 @@ data:
                             "strategy.spinnaker.io/versioned": "false"
                         }
                     },
+                    "type" : "kubernetes.io/dockerconfigjson",
                     "data": {
                         ".dockerconfigjson": "{{ $files.Get "auth.json" | replace "reg.id" $regId | replace "reg.username" $username | replace "reg.password" $password | replace "reg.email" $email | replace "reg.auth" $auth | b64enc }}"
                     }
