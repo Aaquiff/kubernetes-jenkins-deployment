@@ -194,7 +194,7 @@ data:
               ],
               "name": "Bake (Manifest) Dev",
               "namespace": "{{ .name }}-dev",
-              "outputName": "dev",
+              "outputName": "{{ .name }}-dev",
               "overrides": {
                   "wso2.dockerRegistry": "{{ $root.Values.registry.address }}",
                   "wso2.subscription.username": "{{ $root.Values.registry.username }}",
@@ -234,7 +234,7 @@ data:
               ],
               "name": "Bake (Manifest) Prod",
               "namespace": "{{ .name }}-prod",
-              "outputName": "prod",
+              "outputName": "{{ .name }}-prod",
               "overrides": {
                   "wso2.dockerRegistry": "{{ $root.Values.registry.address }}",
                   "wso2.subscription.username": "{{ $root.Values.registry.username }}",
@@ -274,7 +274,7 @@ data:
               ],
               "name": "Bake (Manifest) Staging",
               "namespace": "{{ .name }}-staging",
-              "outputName": "staging",
+              "outputName": "{{ .name }}-staging",
               "overrides": {
                   "wso2.dockerRegistry": "{{ $root.Values.registry.address }}",
                   "wso2.subscription.username": "{{ $root.Values.registry.username }}",
