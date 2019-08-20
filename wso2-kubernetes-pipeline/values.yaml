@@ -49,9 +49,9 @@ spinnaker:
         - aaquiff/wso2is
         - aaquiff/wso2ei
   halyard:
-    spinnakerVersion: 1.13.8
-    image:
-      tag: 1.20.2
+    spinnakerVersion: 1.15.2
+    # image:
+    #   tag: 1.20.2
     additionalScripts:
       create: true
       data:
@@ -87,10 +87,16 @@ spinnaker:
 
 elastic-stack:
   kibana:
+    nameOverride: "wso2is-kibana"
+    elasticsearchHosts: "http://wso2-elasticsearch-master:9200"
     ingress:
       enabled: true
       hosts:
         - kibana
+      tls:
+        - hosts:
+            - kibana
+
   elasticsearch:
     imageTag: 7.3.0
     clusterName: wso2-elasticsearch
@@ -99,7 +105,6 @@ elastic-stack:
     esJavaOpts: -Xms512m -Xmx512m
     minimumMasterNodes: 1
     replicas: 1
-
 
 prometheus-operator:
   # remove parent chart name from this one
@@ -124,6 +129,7 @@ prometheus-operator:
     enabled: false
 
   grafana:
+    adminPassword: "password"
     ingress:
       enabled: true
       annotations: 
@@ -158,3 +164,24 @@ prometheus-operator:
       app: helm
     ## Annotations for default rules
     annotations: {}
+
+  prometheus-node-exporter:
+    service:
+      port: 30206
+      targetPort: 30206
+    kubeEtcd: # Disable Etcd metrics
+      enabled: false
+    kubeControllerManager: #Disble KubeController Metrics
+      enabled: false
+    kubeScheduler: # Disable Scheduler metrics
+      enabled: false
+    alertmanager:
+      enabled: false
+    kubeApiServer:
+      enabled: false
+    coreDns:
+      enabled: false
+    kubeProxy:
+      enabeld: false
+    nodeExporter:
+      enabled: false
