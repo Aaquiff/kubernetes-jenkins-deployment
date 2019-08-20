@@ -196,11 +196,8 @@ data:
               "namespace": "{{ .name }}-dev",
               "outputName": "{{ .name }}-dev",
               "overrides": {
-                  "username": "{{ $root.Values.wso2Username }}",
-                  "password": "{{ $root.Values.wso2Password }}",
-                  "wso2.dockerRegistry": "{{ $root.Values.registry.address }}",
-                  "wso2.subscription.username": "{{ $root.Values.registry.username }}",
-                  "wso2.subscription.password": "{{ $root.Values.registry.password }}",
+                  "wso2.subscription.username": "{{ $root.Values.wso2Username }}",
+                  "wso2.subscription.password": "{{ $root.Values.wso2Password }}",
                   "wso2.centralizedLogging.enabled": "true",
                   "wso2.centralizedLogging.logstash.elasticsearch.host": "{{ $release.Name }}-elasticsearch-client.{{ $release.Namespace }}.svc.cluster.local"
               },
@@ -238,11 +235,8 @@ data:
               "namespace": "{{ .name }}-prod",
               "outputName": "{{ .name }}-prod",
               "overrides": {
-                  "username": "{{ $root.Values.wso2Username }}",
-                  "password": "{{ $root.Values.wso2Password }}",
-                  "wso2.dockerRegistry": "{{ $root.Values.registry.address }}",
-                  "wso2.subscription.username": "{{ $root.Values.registry.username }}",
-                  "wso2.subscription.password": "{{ $root.Values.registry.password }}",
+                  "wso2.subscription.username": "{{ $root.Values.wso2Username }}",
+                  "wso2.subscription.password": "{{ $root.Values.wso2Password }}",
                   "wso2.centralizedLogging.enabled": "true",
                   "wso2.centralizedLogging.logstash.elasticsearch.host": "{{ $release.Name }}-elasticsearch-client.{{ $release.Namespace }}.svc.cluster.local"
               },
@@ -280,11 +274,8 @@ data:
               "namespace": "{{ .name }}-staging",
               "outputName": "{{ .name }}-staging",
               "overrides": {
-                  "username": "{{ $root.Values.wso2Username }}",
-                  "password": "{{ $root.Values.wso2Password }}",
-                  "wso2.dockerRegistry": "{{ $root.Values.registry.address }}",
-                  "wso2.subscription.username": "{{ $root.Values.registry.username }}",
-                  "wso2.subscription.password": "{{ $root.Values.registry.password }}",
+                  "wso2.subscription.username": "{{ $root.Values.wso2Username }}",
+                  "wso2.subscription.password": "{{ $root.Values.wso2Password }}",
                   "wso2.centralizedLogging.enabled": "true",
                   "wso2.centralizedLogging.logstash.elasticsearch.host": "{{ $release.Name }}-elasticsearch-client.{{ $release.Namespace }}.svc.cluster.local"
               },
