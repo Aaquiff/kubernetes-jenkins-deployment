@@ -194,11 +194,10 @@ data:
               ],
               "name": "Bake (Manifest) Dev",
               "namespace": "{{ .name }}-dev",
-              "outputName": "dev",
+              "outputName": "{{ .name }}-dev",
               "overrides": {
-                  "wso2.dockerRegistry": "{{ $root.Values.registry.address }}",
-                  "wso2.subscription.username": "{{ $root.Values.registry.username }}",
-                  "wso2.subscription.password": "{{ $root.Values.registry.password }}",
+                  "wso2.subscription.username": "{{ $root.Values.wso2Username }}",
+                  "wso2.subscription.password": "{{ $root.Values.wso2Password }}",
                   "wso2.centralizedLogging.enabled": "true",
                   "wso2.centralizedLogging.logstash.elasticsearch.host": "{{ $release.Name }}-elasticsearch-client.{{ $release.Namespace }}.svc.cluster.local"
               },
@@ -234,11 +233,10 @@ data:
               ],
               "name": "Bake (Manifest) Prod",
               "namespace": "{{ .name }}-prod",
-              "outputName": "prod",
+              "outputName": "{{ .name }}-prod",
               "overrides": {
-                  "wso2.dockerRegistry": "{{ $root.Values.registry.address }}",
-                  "wso2.subscription.username": "{{ $root.Values.registry.username }}",
-                  "wso2.subscription.password": "{{ $root.Values.registry.password }}",
+                  "wso2.subscription.username": "{{ $root.Values.wso2Username }}",
+                  "wso2.subscription.password": "{{ $root.Values.wso2Password }}",
                   "wso2.centralizedLogging.enabled": "true",
                   "wso2.centralizedLogging.logstash.elasticsearch.host": "{{ $release.Name }}-elasticsearch-client.{{ $release.Namespace }}.svc.cluster.local"
               },
@@ -274,11 +272,10 @@ data:
               ],
               "name": "Bake (Manifest) Staging",
               "namespace": "{{ .name }}-staging",
-              "outputName": "staging",
+              "outputName": "{{ .name }}-staging",
               "overrides": {
-                  "wso2.dockerRegistry": "{{ $root.Values.registry.address }}",
-                  "wso2.subscription.username": "{{ $root.Values.registry.username }}",
-                  "wso2.subscription.password": "{{ $root.Values.registry.password }}",
+                  "wso2.subscription.username": "{{ $root.Values.wso2Username }}",
+                  "wso2.subscription.password": "{{ $root.Values.wso2Password }}",
                   "wso2.centralizedLogging.enabled": "true",
                   "wso2.centralizedLogging.logstash.elasticsearch.host": "{{ $release.Name }}-elasticsearch-client.{{ $release.Namespace }}.svc.cluster.local"
               },
@@ -299,7 +296,7 @@ data:
                   "8"
               ],
               "type": "pipeline",
-              "waitForCompletion": true
+              "waitForCompletion": false
           }
       ],
       "triggers": [
@@ -454,7 +451,7 @@ data:
                   "6"
               ],
               "type": "pipeline",
-              "waitForCompletion": true
+              "waitForCompletion": false
           },
           {
             "account": "default",
@@ -687,7 +684,7 @@ data:
                   "6"
               ],
               "type": "pipeline",
-              "waitForCompletion": true
+              "waitForCompletion": false
           }
       ],
       "triggers": [],
