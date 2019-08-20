@@ -196,6 +196,8 @@ data:
               "namespace": "{{ .name }}-dev",
               "outputName": "{{ .name }}-dev",
               "overrides": {
+                  "username": "{{ $root.Values.wso2Username }}",
+                  "password": "{{ $root.Values.wso2Password }}",
                   "wso2.dockerRegistry": "{{ $root.Values.registry.address }}",
                   "wso2.subscription.username": "{{ $root.Values.registry.username }}",
                   "wso2.subscription.password": "{{ $root.Values.registry.password }}",
@@ -236,6 +238,8 @@ data:
               "namespace": "{{ .name }}-prod",
               "outputName": "{{ .name }}-prod",
               "overrides": {
+                  "username": "{{ $root.Values.wso2Username }}",
+                  "password": "{{ $root.Values.wso2Password }}",
                   "wso2.dockerRegistry": "{{ $root.Values.registry.address }}",
                   "wso2.subscription.username": "{{ $root.Values.registry.username }}",
                   "wso2.subscription.password": "{{ $root.Values.registry.password }}",
@@ -276,6 +280,8 @@ data:
               "namespace": "{{ .name }}-staging",
               "outputName": "{{ .name }}-staging",
               "overrides": {
+                  "username": "{{ $root.Values.wso2Username }}",
+                  "password": "{{ $root.Values.wso2Password }}",
                   "wso2.dockerRegistry": "{{ $root.Values.registry.address }}",
                   "wso2.subscription.username": "{{ $root.Values.registry.username }}",
                   "wso2.subscription.password": "{{ $root.Values.registry.password }}",
@@ -299,7 +305,7 @@ data:
                   "8"
               ],
               "type": "pipeline",
-              "waitForCompletion": true
+              "waitForCompletion": false
           }
       ],
       "triggers": [
@@ -454,7 +460,7 @@ data:
                   "6"
               ],
               "type": "pipeline",
-              "waitForCompletion": true
+              "waitForCompletion": false
           },
           {
             "account": "default",
@@ -687,7 +693,7 @@ data:
                   "6"
               ],
               "type": "pipeline",
-              "waitForCompletion": true
+              "waitForCompletion": false
           }
       ],
       "triggers": [],
