@@ -85,26 +85,25 @@ spinnaker:
        hosts:
          - domain.com
 
-elastic-stack:
-  kibana:
-    nameOverride: "wso2is-kibana"
-    elasticsearchHosts: "http://wso2-elasticsearch-master:9200"
-    ingress:
-      enabled: true
-      hosts:
-        - kibana
-      tls:
-        - hosts:
-            - kibana
-
-  elasticsearch:
-    imageTag: 7.3.0
-    clusterName: wso2-elasticsearch
-    persistence:
-      enabled: false
-    esJavaOpts: -Xms512m -Xmx512m
-    minimumMasterNodes: 1
-    replicas: 1
+kibana:
+  nameOverride: "wso2is-kibana"
+  elasticsearchHosts: "http://wso2-elasticsearch-master:9200"
+  ingress:
+    enabled: true
+    hosts:
+      - kibana
+    tls:
+      - hosts:
+          - kibana
+          
+elasticsearch:
+  minimumMasterNodes: 1
+  replicas: 1
+  imageTag: 7.3.0
+  clusterName: wso2-elasticsearch
+  persistence:
+    enabled: false
+  esJavaOpts: -Xms512m -Xmx512m
 
 prometheus-operator:
   # remove parent chart name from this one
