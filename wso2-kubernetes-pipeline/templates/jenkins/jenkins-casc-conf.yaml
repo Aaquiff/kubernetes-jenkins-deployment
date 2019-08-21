@@ -111,6 +111,10 @@ data:
             }
             steps {
               shell("""
+                timestamp() {
+                  date +\"%Y%m%d%H%M%S\"
+                }
+                
                 TAG=`docker images {{ $image.organization }}/{{ $image.repository }} --format '{{ "{{ .Tag }}" }}' | sort -nrk1 | head -1`
                 if [ -z "\$TAG" ]
                 then
@@ -121,6 +125,7 @@ data:
                 fi
                 #TAG=`docker images {{ $image.organization }}/{{ $image.repository }} --format '{{ "{{ .Tag }}" }}' | sort -nrk1 | head -1`
                 #sed -i "s|<BASE>|{{ $image.organization }}/{{ $image.repository }}:\$TAG|" Dockerfile
+                TAG=`timestamp`
                 docker build -t {{ $image.organization }}/{{ $image.repository }}:\$TAG .
                 docker login -u \$REGISTRY_USERNAME -p \$REGISTRY_PASSWORD
                 docker push {{ $image.organization }}/{{ $image.repository }}:\$TAG""")
