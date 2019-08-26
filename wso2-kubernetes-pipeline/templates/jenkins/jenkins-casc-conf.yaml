@@ -54,9 +54,9 @@ data:
       - script: >
           folder("{{ $application.name }}")
       {{- range $index, $image := .images }}
+      # Custom Image build
       {{- if $image.customImage }}
       - script: >
-          
           job("{{ $application.name }}/{{ $image.repository }}-image") {
             description()
             logRotator(10)
@@ -139,6 +139,38 @@ data:
             }
           }
       {{- end }}
+      # Microgateway image build
+      {{- if $image.microgateway }}
+      - script: >
+          job("{{ $application.name }}/{{ $image.repository }}-image") {
+            description()
+            logRotator(10)
+            keepDependencies(false)
+            disabled(false)
+            concurrentBuild(true)
+            scm {
+                git {
+                    remote {
+                        name('docker-repo')
+                        url('{{ $image.microgateway.gitRepository }}')
+                        credentials('github_credentials')
+                    }
+                    extensions {
+                      relativeTargetDirectory('{{ $image.microgateway.project }}')
+                    }
+                }
+            }
+            triggers {
+              scm('* * * * *')
+            }
+            steps {
+              shell("""
+                micro-gw build {{ $image.microgateway.project }} --deployment-config {{ $image.microgateway.project }}/{{ $image.microgateway.deploymentConfig }}
+              """)
+            }
+          }
+      {{- end }}
+
       {{- end }}
       - script: >
           job("{{ .name }}/push-chart-to-spinnaker") {
@@ -162,7 +194,6 @@ data:
             steps {
               shell(
               """
-
               removeTests() {
                   for f in *
                   do
