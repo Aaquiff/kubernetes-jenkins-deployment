@@ -94,8 +94,6 @@ spec:
           mountPath: /var/run/docker.sock
         - name: jenkins-persistent-storage
           mountPath: /var/jenkins_home
-        - name: wso2-credentials
-          mountPath: /wso2creds
         - name: jenkins-casc-conf
           mountPath: /var/casc_configs
         - name: helm-conf
@@ -111,9 +109,6 @@ spec:
       - name: jenkins-persistent-storage
         persistentVolumeClaim:
           claimName: jenkins-claim
-      - name: wso2-credentials
-        secret:
-          secretName: wso2-credentials
       - name: jenkins-casc-conf
         configMap:
           name: jenkins-casc-conf
