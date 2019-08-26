@@ -1,6 +1,6 @@
 image: 'aaquiff/jenkins-docker-kube:latest'
-wso2Username: <WSO2_SUBSCRIPTION_USERNAME>
-wso2Password: <WSO2_SUBSCRIPTION_PASSWORD>
+wso2Username: ""
+wso2Password: ""
 
 # Admin credentials of jenkins instance to be created
 jenkins:
@@ -85,47 +85,31 @@ spinnaker:
        hosts:
          - domain.com
 
-elastic-stack:
-  kibana:
-    nameOverride: "wso2is-kibana"
-    elasticsearchHosts: "http://wso2-elasticsearch-master:9200"
-    ingress:
-      enabled: true
-      hosts:
-        - kibana
-      tls:
-        - hosts:
-            - kibana
+kibana:
+  nameOverride: "wso2is-kibana"
+  elasticsearchHosts: "http://wso2-elasticsearch-master:9200"
+  ingress:
+    enabled: true
+    hosts:
+      - kibana
+    tls:
+      - hosts:
+          - kibana
+          
+elasticsearch:
+  minimumMasterNodes: 1
+  replicas: 1
+  imageTag: 7.3.0
+  clusterName: wso2-elasticsearch
+  persistence:
+    enabled: false
+  esJavaOpts: -Xms512m -Xmx512m
 
-  elasticsearch:
-    imageTag: 7.3.0
-    clusterName: wso2-elasticsearch
-    persistence:
-      enabled: false
-    esJavaOpts: -Xms512m -Xmx512m
-    minimumMasterNodes: 1
-    replicas: 1
 
 prometheus-operator:
-  # remove parent chart name from this one
-  fullnameOverride: prometheus-operator
-  fullname: prometheus-operator
-  # Kube-scheduler on gke
-  kubeScheduler:
+  alertmanager:
     enabled: false
-
-  # Controller Manager on gke
-  kubeControllerManager:
-    enabled: false
-
-  # kubeDNS instead of coreDns on gke
-  kubeDns:
-    enabled: true
-  coreDns:
-    enabled: false
-
-  # etcd on gke
-  kubeEtcd:
+  nodeExporter:
     enabled: false
 
   grafana:
@@ -159,29 +143,3 @@ prometheus-operator:
       prometheusOperator: false
       time: false
 
-    ## Labels for default rules
-    labels: 
-      app: helm
-    ## Annotations for default rules
-    annotations: {}
-
-  prometheus-node-exporter:
-    service:
-      port: 30206
-      targetPort: 30206
-    kubeEtcd: # Disable Etcd metrics
-      enabled: false
-    kubeControllerManager: #Disble KubeController Metrics
-      enabled: false
-    kubeScheduler: # Disable Scheduler metrics
-      enabled: false
-    alertmanager:
-      enabled: false
-    kubeApiServer:
-      enabled: false
-    coreDns:
-      enabled: false
-    kubeProxy:
-      enabeld: false
-    nodeExporter:
-      enabled: false

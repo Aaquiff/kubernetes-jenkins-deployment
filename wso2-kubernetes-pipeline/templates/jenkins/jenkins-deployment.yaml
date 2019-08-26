@@ -36,6 +36,7 @@ spec:
         env:
         - name: JAVA_OPTS
           value: "-Djenkins.install.runSetupWizard=false"
+        {{- if and (not (eq .Values.wso2Username "")) (not (eq .Values.wso2Password "")) }}
         - name: WSO2_USERNAME
           valueFrom:
             secretKeyRef:
@@ -46,6 +47,7 @@ spec:
             secretKeyRef:
               name: wso2-credentials
               key: password
+        {{- end }}
         - name: REGISTRY_SERVER
           valueFrom:
             secretKeyRef:
