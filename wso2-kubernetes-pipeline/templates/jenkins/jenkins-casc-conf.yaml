@@ -48,6 +48,7 @@ data:
       authorizationStrategy: loggedInUsersCanDoAnything
     jobs:
       {{- $namespace := .Release.Namespace }}
+      {{- $root := . }}
       {{- range .Values.applications }}
       {{- $application := . }}
       - script: >
@@ -80,11 +81,13 @@ data:
                   date +\"%Y%m%d%H%M%S\"
                 }
 
+                {{- if and (not (eq $root.Values.wso2Username "")) (not (eq $root.Values.wso2Password "")) }}
+                docker login docker.wso2.com -u \$WSO2_USERNAME -p \$WSO2_PASSWORD
+                {{- end }}
                 # Set WSO2 Base Image
                 sed -i "s|<BASE>|{{ $image.customImage.baseImage }}|" Dockerfile
 
                 IMAGE_NAME={{ $image.organization }}/{{ $image.repository }}:`timestamp`
-                docker login docker.wso2.com -u \$WSO2_USERNAME -p \$WSO2_PASSWORD
                 docker build -t \$IMAGE_NAME .
                 docker login -u \$REGISTRY_USERNAME -p \$REGISTRY_PASSWORD
                 docker push \$IMAGE_NAME""")
@@ -114,6 +117,10 @@ data:
                 timestamp() {
                   date +\"%Y%m%d%H%M%S\"
                 }
+
+                {{- if and (not (eq $root.Values.wso2Username "")) (not (eq $root.Values.wso2Password "")) }}
+                docker login docker.wso2.com -u \$WSO2_USERNAME -p \$WSO2_PASSWORD
+                {{- end }}
                 
                 TAG=`docker images {{ $image.organization }}/{{ $image.repository }} --format '{{ "{{ .Tag }}" }}' | sort -nrk1 | head -1`
                 if [ -z "\$TAG" ]
