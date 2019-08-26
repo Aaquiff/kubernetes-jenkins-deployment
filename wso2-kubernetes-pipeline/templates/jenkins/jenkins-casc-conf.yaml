@@ -141,7 +141,7 @@ data:
       {{- end }}
       {{- end }}
       - script: >
-          job("{{ .name }}/chart") {
+          job("{{ .name }}/push-chart-to-spinnaker") {
             description()
             logRotator(10)
             keepDependencies(false)
