@@ -9,6 +9,15 @@ metadata:
 spec:
   template:
     spec:
+      initContainers:
+      # initContainer that waits for spinnaker gate API to be ready
+      - name: wait-for-spin-gate
+        image: aaquiff/spin
+        command: ["/bin/sh"]
+        args: ["-c", "until spin application list --gate-endpoint $SPINNAKER_API; do echo 'Request to spin-gate failed. Retrying in 5s'; sleep 5; done;"]
+        env:
+        - name: SPINNAKER_API
+          value: "http://spin-gate.{{ .Release.Namespace }}.svc.cluster.local:8084"
       containers:
       - name: spin-jenkins-job-configurator
         image: appropriate/curl
