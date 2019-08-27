@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cleanup-kubernetes-artifacts-job
+  annotations:
+    "helm.sh/hook": "pre-delete"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+    "helm.sh/hook-weight": "0"
+spec:
+  template:
+    spec:
+      serviceAccountName: jenkins
+      containers:
+      - name: cleanup-kubernetes-artifacts
+        image: lachlanevenson/k8s-kubectl
+        command: ["/bin/sh"]
+        args: ["-c", "sh /cleanup/run.sh"]
+        volumeMounts: 
+        - name: cleanup-kubernetes-artifacts-conf
+          mountPath: /cleanup
+      restartPolicy: Never
+      volumes:
+      - name: cleanup-kubernetes-artifacts-conf
+        configMap:
+          name: cleanup-kubernetes-artifacts-conf
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cleanup-kubernetes-artifacts-conf
+data:
+  run.sh: |-
+    kubectl delete crd prometheuses.monitoring.coreos.com
+    kubectl delete crd prometheusrules.monitoring.coreos.com
+    kubectl delete crd servicemonitors.monitoring.coreos.com
+    kubectl delete crd podmonitors.monitoring.coreos.com
+    kubectl delete crd alertmanagers.monitoring.coreos.com
