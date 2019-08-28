@@ -433,7 +433,7 @@ data:
           {
               "failPipeline": true,
               "judgmentInputs": [],
-              "name": "Manual Judgment",
+              "name": "Manual Judgement",
               "notifications": [],
               "refId": "6",
               "requisiteStageRefIds": [
@@ -666,7 +666,7 @@ data:
           {
               "failPipeline": true,
               "judgmentInputs": [],
-              "name": "Manual Judgment",
+              "name": "Manual Judgement",
               "notifications": [],
               "refId": "6",
               "requisiteStageRefIds": [
