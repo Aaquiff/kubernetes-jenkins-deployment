@@ -162,6 +162,8 @@ data:
             }
             steps {
               shell("""
+                TIMESTAMP=`date +\"%Y%m%d%H%M%S\"`
+
                 micro-gw init temp -f
                 cp *.yaml temp/api_definitions/
         
@@ -171,13 +173,26 @@ data:
                     enable = true
                     name = \\\"{{ $image.repository }}\\\"
                     registry = '{{ $root.Values.registry.address }}/{{ $image.organization }}'
-                    tag = 'v1'" > deployment-config.toml
+                    tag = '\$TIMESTAMP'
+                    [docker.dockerCopyFiles]
+                      enable = true
+                      [[docker.dockerCopyFiles.files]]
+                          source = '/wso2am-micro-gw-toolkit-3.0.1/resources/conf/micro-gw.conf'
+                          target = '/home/ballerina/conf/micro-gw.conf'
+                          isBallerinaConf = true" > deployment-config.toml
                     
                 cat deployment-config.toml
                 micro-gw build temp --deployment-config deployment-config.toml
 
                 docker login -u \$REGISTRY_USERNAME -p \$REGISTRY_PASSWORD
-                docker push {{ $root.Values.registry.address }}/{{ $image.organization }}/{{ $image.repository }}:v1
+
+                # Push latest tag if it does not exist
+                if ! docker pull {{ $root.Values.registry.address }}/{{ $image.organization }}/{{ $image.repository }}; 
+                then 
+                  docker push {{ $root.Values.registry.address }}/{{ $image.organization }}/{{ $image.repository }};
+                fi
+
+                docker push {{ $root.Values.registry.address }}/{{ $image.organization }}/{{ $image.repository }}:\$TIMESTAMP
               """)
             }
           }
