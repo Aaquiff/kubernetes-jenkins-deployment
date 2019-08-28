@@ -33,11 +33,11 @@ applications:
       customChart: false
       name: microgateway
       version: 3.0.1-1
-      repo: 'https://github.com/<GITHUB_ORG>//sample-mgw-chart'
+      repo: 'https://github.com/<GITHUB_ORG>/sample-mgw-chart'
     images:
       - organization: <REGISTRY_USERNAME>
         repository: petstore
         microgateway:
-          gitRepository: https://github.com/wso2-incubator//petstore
+          gitRepository: https://github.com/wso2-incubator/petstore
           
 
