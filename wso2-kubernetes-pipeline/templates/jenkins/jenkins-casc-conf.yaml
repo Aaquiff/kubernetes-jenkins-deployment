@@ -171,6 +171,10 @@ data:
                         url('{{ $image.microgateway.gitRepository }}')
                         credentials('github_credentials')
                     }
+                    extensions {
+                      wipeOutWorkspace()
+                      relativeTargetDirectory('{{ $image.microgateway.projectName }}')
+                    }
                 }
             }
             triggers {
