@@ -21,22 +21,23 @@ spinnaker:
       email: <REGISTRY_EMAIL>
       # Add each repositories that would be used in the deployment
       repositories:
-        - <REGISTRY_USERNAME>/wso2is
+        - <REGISTRY_USERNAME>/petstore
 
 applications:
-  - name: wso2is
+  - name: wso2mgw
     email: <EMAIL>
     testScript:
       path: tests
       command: test.sh
     chart:
       customChart: false
-      name: is-pattern-1
-      version: 5.8.0-3
-      repo: 'https://github.com/<GITHUB_ORG>/sample-is-chart'
+      name: microgateway
+      version: 3.0.1-1
+      repo: 'https://github.com/<GITHUB_ORG>/sample-mgw-chart'
     images:
       - organization: <REGISTRY_USERNAME>
-        repository: wso2is
-        customImage:
-          baseImage: 'wso2/wso2is:5.8.0'
-          dockerfileGitRepo: 'https://github.com/wso2-incubator/sample-docker-is'
+        repository: petstore
+        microgateway:
+          gitRepository: https://github.com/<GITHUB_ORG>/petstore
+          
+

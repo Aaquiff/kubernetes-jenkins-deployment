@@ -39,4 +39,10 @@ RUN gpasswd -a jenkins dsock
 
 RUN usermod -aG sudo jenkins
 
+COPY wso2am-micro-gw-toolkit-3.0.1.zip /wso2am-micro-gw-toolkit-3.0.1.zip
+RUN unzip /wso2am-micro-gw-toolkit-3.0.1.zip
+
+RUN ls /wso2am-micro-gw-toolkit-3.0.1/bin
+ENV PATH="${PATH}:/wso2am-micro-gw-toolkit-3.0.1/bin"
+
 # USER JENKINS

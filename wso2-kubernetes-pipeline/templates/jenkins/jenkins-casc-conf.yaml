@@ -54,9 +54,9 @@ data:
       - script: >
           folder("{{ $application.name }}")
       {{- range $index, $image := .images }}
+      # Custom Image build
       {{- if $image.customImage }}
       - script: >
-          
           job("{{ $application.name }}/{{ $image.repository }}-image") {
             description()
             logRotator(10)
@@ -90,6 +90,14 @@ data:
                 IMAGE_NAME={{ $image.organization }}/{{ $image.repository }}:`timestamp`
                 docker build -t \$IMAGE_NAME .
                 docker login -u \$REGISTRY_USERNAME -p \$REGISTRY_PASSWORD
+
+                # Push latest tag if it does not exist
+                if ! docker pull {{ $root.Values.registry.address }}/{{ $image.organization }}/{{ $image.repository }}; 
+                then 
+                  docker tag {{ $root.Values.registry.address }}/{{ $image.organization }}/{{ $image.repository }}:\$TAG {{ $root.Values.registry.address }}/{{ $image.organization }}/{{ $image.repository }};
+                  docker push {{ $root.Values.registry.address }}/{{ $image.organization }}/{{ $image.repository }};
+                fi
+
                 docker push \$IMAGE_NAME""")
             }
           }
@@ -135,10 +143,69 @@ data:
                 TAG=`timestamp`
                 docker build -t {{ $image.organization }}/{{ $image.repository }}:\$TAG .
                 docker login -u \$REGISTRY_USERNAME -p \$REGISTRY_PASSWORD
+
+                # Push latest tag if it does not exist
+                if ! docker pull {{ $root.Values.registry.address }}/{{ $image.organization }}/{{ $image.repository }}; 
+                then 
+                  docker tag {{ $root.Values.registry.address }}/{{ $image.organization }}/{{ $image.repository }}:\$TAG {{ $root.Values.registry.address }}/{{ $image.organization }}/{{ $image.repository }};
+                  docker push {{ $root.Values.registry.address }}/{{ $image.organization }}/{{ $image.repository }};
+                fi
+
                 docker push {{ $image.organization }}/{{ $image.repository }}:\$TAG""")
             }
           }
       {{- end }}
+      # Microgateway image build
+      {{- if $image.microgateway }}
+      - script: >
+          job("{{ $application.name }}/{{ $image.repository }}-image") {
+            description()
+            logRotator(10)
+            keepDependencies(false)
+            disabled(false)
+            concurrentBuild(true)
+            scm {
+                git {
+                    remote {
+                        name('docker-repo')
+                        url('{{ $image.microgateway.gitRepository }}')
+                        credentials('github_credentials')
+                    }
+                    extensions {
+                      wipeOutWorkspace()
+                      relativeTargetDirectory('{{ $image.microgateway.projectName }}')
+                    }
+                }
+            }
+            triggers {
+              scm('* * * * *')
+            }
+            steps {
+              shell("""
+                TIMESTAMP=`date +\"%Y%m%d%H%M%S\"`
+
+                TAG=`cat {{ $image.microgateway.projectName }}/conf/deployment-config.toml | grep "tag" | awk '{print \\\$3}' | sed "s/'//g"`
+
+                sed -i 's|\$MICROGW_TOOLKIT_HOME|/wso2am-micro-gw-toolkit-3.0.1|' {{ $image.microgateway.projectName }}/conf/deployment-config.toml
+                cat {{ $image.microgateway.projectName }}/conf/deployment-config.toml
+
+                micro-gw build {{ $image.microgateway.projectName }} --deployment-config {{ $image.microgateway.projectName }}/conf/deployment-config.toml
+
+                docker login -u \$REGISTRY_USERNAME -p \$REGISTRY_PASSWORD
+
+                # Push latest tag if it does not exist
+                if ! docker pull {{ $root.Values.registry.address }}/{{ $image.organization }}/{{ $image.repository }}; 
+                then 
+                  docker tag {{ $root.Values.registry.address }}/{{ $image.organization }}/{{ $image.repository }}:\$TAG {{ $root.Values.registry.address }}/{{ $image.organization }}/{{ $image.repository }};
+                  docker push {{ $root.Values.registry.address }}/{{ $image.organization }}/{{ $image.repository }};
+                fi
+
+                docker push {{ $root.Values.registry.address }}/{{ $image.organization }}/{{ $image.repository }}:\$TAG
+              """)
+            }
+          }
+      {{- end }}
+
       {{- end }}
       - script: >
           job("{{ .name }}/push-chart-to-spinnaker") {
@@ -162,7 +229,6 @@ data:
             steps {
               shell(
               """
-
               removeTests() {
                   for f in *
                   do

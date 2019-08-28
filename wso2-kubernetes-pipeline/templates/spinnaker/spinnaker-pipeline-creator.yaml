@@ -7,7 +7,7 @@ metadata:
   name: spinnaker-pipeline-creator
   annotations:
     "helm.sh/hook": "post-install,post-upgrade"
-    "helm.sh/hook-delete-policy": "hook-succeeded"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
     "helm.sh/hook-weight": "0"
 spec:
   template:
@@ -433,7 +433,7 @@ data:
           {
               "failPipeline": true,
               "judgmentInputs": [],
-              "name": "Manual Judgment",
+              "name": "Manual Judgement",
               "notifications": [],
               "refId": "6",
               "requisiteStageRefIds": [
@@ -666,7 +666,7 @@ data:
           {
               "failPipeline": true,
               "judgmentInputs": [],
-              "name": "Manual Judgment",
+              "name": "Manual Judgement",
               "notifications": [],
               "refId": "6",
               "requisiteStageRefIds": [
