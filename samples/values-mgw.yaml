@@ -38,6 +38,6 @@ applications:
       - organization: <REGISTRY_USERNAME>
         repository: petstore
         microgateway:
-          gitRepository: https://github.com/wso2-incubator/petstore
+          gitRepository: https://github.com/<GITHUB_ORG>/petstore
           
 

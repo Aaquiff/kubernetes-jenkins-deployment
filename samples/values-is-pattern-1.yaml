@@ -33,7 +33,7 @@ applications:
       customChart: false
       name: is-pattern-1
       version: 5.8.0-3
-      repo: 'https://github.com/wso2-incubator/sample-is-chart'
+      repo: 'https://github.com/<GITHUB_ORG>/sample-is-chart'
     images:
       - organization: <REGISTRY_USERNAME>
         repository: wso2is
