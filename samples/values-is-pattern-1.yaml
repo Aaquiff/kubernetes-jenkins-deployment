@@ -37,6 +37,7 @@ applications:
     images:
       - organization: <REGISTRY_USERNAME>
         repository: wso2is
+        deployment: wso2is
         customImage:
           baseImage: 'wso2/wso2is:5.8.0'
           dockerfileGitRepo: 'https://github.com/wso2-incubator/sample-docker-is'
