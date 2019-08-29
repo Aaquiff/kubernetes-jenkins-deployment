@@ -199,7 +199,11 @@ data:
                   "wso2.subscription.username": "{{ $root.Values.wso2Username }}",
                   "wso2.subscription.password": "{{ $root.Values.wso2Password }}",
                   "wso2.centralizedLogging.enabled": "true",
-                  "wso2.centralizedLogging.logstash.elasticsearch.host": "wso2-elasticsearch-master.{{ $release.Namespace }}.svc.cluster.local"
+                  "wso2.centralizedLogging.logstash.elasticsearch.host": "wso2-elasticsearch-master.{{ $release.Namespace }}.svc.cluster.local",
+                  "wso2.monitoring.enabled": "true",
+                  "wso2.monitoring.prometheus.serviceMonitor.labels.release": "{{ $root.Release.Name }}",
+                  "wso2.monitoring.prometheus.serviceMonitor.labels.namespace": "{{ $root.Release.Namespace }}",
+                  "wso2.monitoring.prometheus.jmxJobName": "jmx",
               },
               "refId": "1",
               "requisiteStageRefIds": [],
@@ -238,7 +242,11 @@ data:
                   "wso2.subscription.username": "{{ $root.Values.wso2Username }}",
                   "wso2.subscription.password": "{{ $root.Values.wso2Password }}",
                   "wso2.centralizedLogging.enabled": "true",
-                  "wso2.centralizedLogging.logstash.elasticsearch.host": "wso2-elasticsearch-master.{{ $release.Namespace }}.svc.cluster.local"
+                  "wso2.centralizedLogging.logstash.elasticsearch.host": "wso2-elasticsearch-master.{{ $release.Namespace }}.svc.cluster.local",
+                  "wso2.monitoring.enabled": "true",
+                  "wso2.monitoring.prometheus.serviceMonitor.labels.release": "{{ $root.Release.Name }}",
+                  "wso2.monitoring.prometheus.serviceMonitor.labels.namespace": "{{ $root.Release.Namespace }}",
+                  "wso2.monitoring.prometheus.jmxJobName": "jmx"
               },
               "refId": "3",
               "requisiteStageRefIds": [],
@@ -277,7 +285,11 @@ data:
                   "wso2.subscription.username": "{{ $root.Values.wso2Username }}",
                   "wso2.subscription.password": "{{ $root.Values.wso2Password }}",
                   "wso2.centralizedLogging.enabled": "true",
-                  "wso2.centralizedLogging.logstash.elasticsearch.host": "wso2-elasticsearch-master.{{ $release.Namespace }}.svc.cluster.local"
+                  "wso2.centralizedLogging.logstash.elasticsearch.host": "wso2-elasticsearch-master.{{ $release.Namespace }}.svc.cluster.local",
+                  "wso2.monitoring.enabled": "true",
+                  "wso2.monitoring.prometheus.serviceMonitor.labels.release": "{{ $root.Release.Name }}",
+                  "wso2.monitoring.prometheus.serviceMonitor.labels.namespace": "{{ $root.Release.Namespace }}",
+                  "wso2.monitoring.prometheus.jmxJobName": "jmx"
               },
               "refId": "8",
               "requisiteStageRefIds": [],

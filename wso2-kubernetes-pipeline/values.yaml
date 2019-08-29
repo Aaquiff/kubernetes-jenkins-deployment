@@ -18,36 +18,8 @@ github:
   username: <GITHUB_USERNAME>
   password: <GITHUB_PASSWORD>
 
-applications:
-  - name: wso2is
-    email: <EMAIL>
-    testScript:
-      path: tests
-      command: test.sh
-    chart:
-      customChart: false
-      name: is-pattern-1
-      version: 5.8.0-1
-      repo: 'https://github.com/wso2/sample-is-chart'
-    images:
-      - organization: aaquiff
-        repository: wso2is
-        # customImage:
-        #   baseImage: 'docker.wso2.com/wso2is:5.8.0'
-        #   dockerfileGitRepo: 'https://github.com/Aaquiff/docker-is'
-
-
 # Values for Spinnaker chart
 spinnaker:
-  dockerRegistries:
-    - name: dockerhub
-      address: index.docker.io
-      username: <REGISTRY_USERNAME>
-      password: <REGISTRY_PASSWORD>
-      email: <REGISTRY_EMAIL>
-      repositories:
-        - aaquiff/wso2is
-        - aaquiff/wso2ei
   halyard:
     spinnakerVersion: 1.15.2
     # image:
@@ -105,15 +77,35 @@ elasticsearch:
     enabled: false
   esJavaOpts: -Xms512m -Xmx512m
 
-
 prometheus-operator:
+  prometheus-node-exporter:
+    service:
+      port: 30206
+      targetPort: 30206
+  kubeEtcd: # Disable Etcd metrics
+    enabled: false
+  kubeControllerManager: #Disble KubeController Metrics
+    enabled: false
+  kubeScheduler: # Disable Scheduler metrics
+    enabled: false
   alertmanager:
     enabled: false
+  kubeApiServer:
+    enabled: false
+  coreDns:
+    enabled: false
+  kubeProxy:
+    enabeld: false
   nodeExporter:
     enabled: false
-
+  prometheus:
+    prometheusSpec:
+      image:
+        tag: v2.9.2
   grafana:
-    adminPassword: "password"
+    image:
+      tag: 6.1.6
+    adminPassword: "admin"
     ingress:
       enabled: true
       annotations: 
@@ -121,25 +113,13 @@ prometheus-operator:
       hosts:
         - grafana
 
-  defaultRules:
-    create: true
-    rules:
-      alertmanager: false
-      etcd: false
-      general: false
-      k8s: false
-      kubeApiserver: false
-      kubePrometheusNodeAlerting: false
-      kubePrometheusNodeRecording: false
-      kubernetesAbsent: false
-      kubernetesApps: false
-      kubernetesResources: false
-      kubernetesStorage: false
-      kubernetesSystem: false
-      kubeScheduler: false
-      network: false
-      node: false
-      prometheus: false
-      prometheusOperator: false
-      time: false
-
+prometheus-blackbox-exporter:
+  serviceMonitor:
+    enabled: true
+  config: 
+    modules:
+      http_2xx:
+        prober: http
+        http:
+          tls_config:
+            insecure_skip_verify: true

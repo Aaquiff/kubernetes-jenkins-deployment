@@ -12,3 +12,7 @@ dependencies:
 - name: elasticsearch
   version: 7.3.0
   repository: https://helm.elastic.co
+- name: prometheus-blackbox-exporter
+  version: 1.1.0
+  repository: https://kubernetes-charts.storage.googleapis.com
+  
