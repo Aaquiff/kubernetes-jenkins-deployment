@@ -209,7 +209,7 @@ data:
                   "wso2.centralizedLogging.logstash.elasticsearch.host": "wso2-elasticsearch-master.{{ $release.Namespace }}.svc.cluster.local",
                   "wso2.monitoring.enabled": "true",
                   "wso2.monitoring.prometheus.serviceMonitor.labels.release": "{{ $root.Release.Name }}",
-                  "wso2.monitoring.prometheus.serviceMonitor.labels.namespace": "{{ $root.Release.Namespace }}",
+                  "wso2.monitoring.prometheus.serviceMonitor.blackBoxNamespace": "{{ $root.Release.Namespace }}",
                   "wso2.monitoring.prometheus.jmxJobName": "jmx"
               },
               "refId": "1",
@@ -259,7 +259,7 @@ data:
                   "wso2.centralizedLogging.logstash.elasticsearch.host": "wso2-elasticsearch-master.{{ $release.Namespace }}.svc.cluster.local",
                   "wso2.monitoring.enabled": "true",
                   "wso2.monitoring.prometheus.serviceMonitor.labels.release": "{{ $root.Release.Name }}",
-                  "wso2.monitoring.prometheus.serviceMonitor.labels.namespace": "{{ $root.Release.Namespace }}",
+                  "wso2.monitoring.prometheus.serviceMonitor.blackBoxNamespace": "{{ $root.Release.Namespace }}",
                   "wso2.monitoring.prometheus.jmxJobName": "jmx"
               },
               "refId": "3",
@@ -309,7 +309,7 @@ data:
                   "wso2.centralizedLogging.logstash.elasticsearch.host": "wso2-elasticsearch-master.{{ $release.Namespace }}.svc.cluster.local",
                   "wso2.monitoring.enabled": "true",
                   "wso2.monitoring.prometheus.serviceMonitor.labels.release": "{{ $root.Release.Name }}",
-                  "wso2.monitoring.prometheus.serviceMonitor.labels.namespace": "{{ $root.Release.Namespace }}",
+                  "wso2.monitoring.prometheus.serviceMonitor.blackBoxNamespace": "{{ $root.Release.Namespace }}",
                   "wso2.monitoring.prometheus.jmxJobName": "jmx"
               },
               "refId": "8",
