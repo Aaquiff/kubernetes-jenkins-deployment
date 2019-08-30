@@ -196,6 +196,13 @@ data:
               "namespace": "{{ .name }}-dev",
               "outputName": "{{ .name }}-dev",
               "overrides": {
+                  {{- range $index, $image := .images }}
+                  {{- $imageOrganization := printf "%s/%s" $root.Values.registry.address $image.organization }}
+                  "wso2.deployment.{{ $image.deployment }}.dockerRegistry": "{{ $imageOrganization }}",
+                  "wso2.deployment.{{ $image.deployment }}.imageName": "{{ $image.repository }}",
+                  "wso2.deployment.{{ $image.deployment }}.imageTag": "",
+                  "wso2.deployment.{{ $image.deployment }}.imagePullSecrets": "regcred",
+                  {{- end }}
                   "wso2.subscription.username": "{{ $root.Values.wso2Username }}",
                   "wso2.subscription.password": "{{ $root.Values.wso2Password }}",
                   "wso2.centralizedLogging.enabled": "true",
@@ -203,7 +210,7 @@ data:
                   "wso2.monitoring.enabled": "true",
                   "wso2.monitoring.prometheus.serviceMonitor.labels.release": "{{ $root.Release.Name }}",
                   "wso2.monitoring.prometheus.serviceMonitor.labels.namespace": "{{ $root.Release.Namespace }}",
-                  "wso2.monitoring.prometheus.jmxJobName": "jmx",
+                  "wso2.monitoring.prometheus.jmxJobName": "jmx"
               },
               "refId": "1",
               "requisiteStageRefIds": [],
@@ -239,6 +246,13 @@ data:
               "namespace": "{{ .name }}-prod",
               "outputName": "{{ .name }}-prod",
               "overrides": {
+                  {{- range $index, $image := .images }}
+                  {{- $imageOrganization := printf "%s/%s" $root.Values.registry.address $image.organization }}
+                  "wso2.deployment.{{ $image.deployment }}.dockerRegistry": "{{ $imageOrganization }}",
+                  "wso2.deployment.{{ $image.deployment }}.imageName": "{{ $image.repository }}",
+                  "wso2.deployment.{{ $image.deployment }}.imageTag": "",
+                  "wso2.deployment.{{ $image.deployment }}.imagePullSecrets": "regcred",
+                  {{- end }}
                   "wso2.subscription.username": "{{ $root.Values.wso2Username }}",
                   "wso2.subscription.password": "{{ $root.Values.wso2Password }}",
                   "wso2.centralizedLogging.enabled": "true",
@@ -282,6 +296,13 @@ data:
               "namespace": "{{ .name }}-staging",
               "outputName": "{{ .name }}-staging",
               "overrides": {
+                  {{- range $index, $image := .images }}
+                  {{- $imageOrganization := printf "%s/%s" $root.Values.registry.address $image.organization }}
+                  "wso2.deployment.{{ $image.deployment }}.dockerRegistry": "{{ $imageOrganization }}",
+                  "wso2.deployment.{{ $image.deployment }}.imageName": "{{ $image.repository }}",
+                  "wso2.deployment.{{ $image.deployment }}.imageTag": "",
+                  "wso2.deployment.{{ $image.deployment }}.imagePullSecrets": "regcred",
+                  {{- end }}
                   "wso2.subscription.username": "{{ $root.Values.wso2Username }}",
                   "wso2.subscription.password": "{{ $root.Values.wso2Password }}",
                   "wso2.centralizedLogging.enabled": "true",
