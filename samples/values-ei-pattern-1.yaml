@@ -33,11 +33,11 @@ applications:
       customChart: false
       name: ei-pattern-1
       version: 6.5.0-3
-      repo: 'https://github.com/wso2-incubator/sample-ei-chart'
+      repo: 'https://github.com/wso2-incubator/cicd-sample-chart-ei'
     images:
       - organization: <REGISTRY_USERNAME>
         repository: wso2ei-integrator
         deployment: wso2ei
         customImage:
           baseImage: 'wso2/wso2ei-integrator:6.5.0'
-          dockerfileGitRepo: 'https://github.com/wso2-incubator/sample-docker-ei'
+          dockerfileGitRepo: 'https://github.com/wso2-incubator/cicd-sample-docker-ei'
