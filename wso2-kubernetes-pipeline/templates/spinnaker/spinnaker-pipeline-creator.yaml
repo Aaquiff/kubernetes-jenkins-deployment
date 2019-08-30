@@ -15,7 +15,7 @@ spec:
       initContainers:
       # initContainer that waits for spinnaker gate API to be ready
       - name: wait-for-spin-gate
-        image: aaquiff/spin
+        image: wso2/kubernetes-pipeline-spin
         command: ["/bin/sh"]
         args: ["-c", "until spin application list --gate-endpoint $SPINNAKER_API; do echo 'Request to spin-gate failed. Retrying in 5s'; sleep 5; done;"]
         env:
@@ -23,7 +23,7 @@ spec:
           value: "http://spin-gate.{{ $root.Release.Namespace }}.svc.cluster.local:8084"
       containers:
       - name: spin
-        image: aaquiff/spin
+        image: wso2/kubernetes-pipeline-spin
         command: ["/bin/sh"]
         args: ["-c", "sh /spinnaker/run.sh"]
         env:
