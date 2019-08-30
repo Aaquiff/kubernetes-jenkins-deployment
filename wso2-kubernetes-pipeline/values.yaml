@@ -1,4 +1,4 @@
-image: 'aaquiff/jenkins-docker-kube:latest'
+image: 'wso2/kubernetes-pipeline-jenkins:latest'
 wso2Username: ""
 wso2Password: ""
 
@@ -58,7 +58,7 @@ spinnaker:
          - domain.com
 
 kibana:
-  nameOverride: "wso2is-kibana"
+  nameOverride: "kibana"
   elasticsearchHosts: "http://wso2-elasticsearch-master:9200"
   ingress:
     enabled: true
