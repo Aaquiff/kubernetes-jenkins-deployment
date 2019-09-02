@@ -1,5 +1,7 @@
 # HELM resources for WSO2 kubernetes pipelines
 
+> This project is moved to https://github.com/wso2/kubernetes-pipeline
+
 The setup consists of Jenkins and spinnaker. It can be deployed on top of Kubernetes and deployed using HELM which makes it easier to configure, install, scale and upgrade (Refer Installation Instructions at the bottom). In addition to the tools, jenkins jobs and spinnaker pipelines for each specified product are preconfigured, which makes getting started hassle-free.
 
 Use the `wso2-cd` helm chart to deploy a jenkins instance that could handle the CI/CD operations for WSO2 products.
